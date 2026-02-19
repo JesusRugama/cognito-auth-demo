@@ -1,4 +1,28 @@
- steps:
+name: Deploy to CloudFront
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'client/**'
+      - 'server/**'
+      - '.github/workflows/**'
+  workflow_dispatch:
+
+env:
+  AWS_REGION: us-east-1
+  S3_BUCKET: jesusrugama.demos.cognito-scopes
+  CLOUDFRONT_DISTRIBUTION_ID: E2SU6OE8HET74Q
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
       - name: Checkout
         uses: actions/checkout@v4
 
