@@ -3,7 +3,7 @@ export interface Endpoint {
   method: 'GET' | 'POST' | 'PUT' | 'DELETE';
   path: string;
   description: string;
-  requiredScope: string;
+  requiredGroup: string;
 }
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? '';
@@ -14,28 +14,28 @@ export const API_ENDPOINTS: Endpoint[] = [
     method: 'GET',
     path: `${API_BASE_URL}/endpoint1`,
     description: "Read User's addresses list",
-    requiredScope: 'myapi/read',
+    requiredGroup: 'customer | admin',
   },
   {
     id: 'endpoint2',
     method: 'POST',
     path: `${API_BASE_URL}/endpoint2`,
     description: 'Create New Address',
-    requiredScope: 'myapi/write',
+    requiredGroup: 'customer | admin',
   },
   {
     id: 'endpoint3',
     method: 'PUT',
     path: `${API_BASE_URL}/endpoint3`,
     description: 'Update Address',
-    requiredScope: 'myapi/write',
+    requiredGroup: 'admin',
   },
   {
     id: 'endpoint4',
     method: 'GET',
     path: `${API_BASE_URL}/endpoint4`,
     description: 'List Users',
-    requiredScope: 'myapi/admin',
+    requiredGroup: 'admin',
   },
 ];
 

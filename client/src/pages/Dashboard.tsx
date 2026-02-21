@@ -1,4 +1,4 @@
-import { LogOut, Shield, Eye, UserCog } from 'lucide-react';
+import { LogOut, Shield } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { EndpointCard } from '../components/EndpointCard';
 import { API_ENDPOINTS } from '../types/endpoints';
@@ -8,15 +8,11 @@ interface DashboardProps {
 }
 
 export function Dashboard({ onLogout }: DashboardProps) {
-  const { user, logout, switchRole } = useAuth();
+  const { user, logout } = useAuth();
 
   const handleLogout = () => {
     logout();
     onLogout();
-  };
-
-  const handleSwitchRole = (role: 'customer' | 'admin') => {
-    switchRole(role);
   };
 
   return (
@@ -82,44 +78,6 @@ export function Dashboard({ onLogout }: DashboardProps) {
             ))}
           </div>
 
-          <div className="border-t border-slate-700 pt-6 mt-6">
-            <h4 className="text-sm font-semibold text-slate-300 mb-4">
-              Switch App Client:
-            </h4>
-            <div className="flex flex-wrap gap-4">
-              <button
-                onClick={() => handleSwitchRole('customer')}
-                disabled={user?.role === 'customer'}
-                className={`flex items-center gap-3 px-6 py-3 rounded-lg font-semibold transition-all shadow-lg ${
-                  user?.role === 'customer'
-                    ? 'bg-green-600 text-white border-2 border-green-400'
-                    : 'bg-slate-700 hover:bg-slate-600 text-slate-200 border-2 border-slate-600'
-                }`}
-              >
-                <Eye className="w-5 h-5" />
-                <div className="text-left">
-                  <div className="text-sm">Login as Customer</div>
-                  <div className="text-xs opacity-80">Read-only access</div>
-                </div>
-              </button>
-
-              <button
-                onClick={() => handleSwitchRole('admin')}
-                disabled={user?.role === 'admin'}
-                className={`flex items-center gap-3 px-6 py-3 rounded-lg font-semibold transition-all shadow-lg ${
-                  user?.role === 'admin'
-                    ? 'bg-blue-600 text-white border-2 border-blue-400'
-                    : 'bg-slate-700 hover:bg-slate-600 text-slate-200 border-2 border-slate-600'
-                }`}
-              >
-                <UserCog className="w-5 h-5" />
-                <div className="text-left">
-                  <div className="text-sm">Login as Admin</div>
-                  <div className="text-xs opacity-80">Full access</div>
-                </div>
-              </button>
-            </div>
-          </div>
         </section>
 
         <section className="bg-slate-800 border border-slate-700 rounded-xl p-8 shadow-xl">
@@ -133,7 +91,7 @@ export function Dashboard({ onLogout }: DashboardProps) {
 
         <div className="text-center py-6">
           <p className="text-sm text-slate-500">
-            Simulated API responses using httpbin.org
+            Powered by Amazon Cognito · To switch roles, log out and sign in with a different app client
           </p>
         </div>
       </main>

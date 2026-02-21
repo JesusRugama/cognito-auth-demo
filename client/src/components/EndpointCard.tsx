@@ -11,7 +11,7 @@ export function EndpointCard({ endpoint }: EndpointCardProps) {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<TestResult | null>(null);
   const [showDetails, setShowDetails] = useState(false);
-  useAuth();
+  const { accessToken } = useAuth();
 
   const getMethodColor = (method: string) => {
     switch (method) {
@@ -32,8 +32,7 @@ export function EndpointCard({ endpoint }: EndpointCardProps) {
     setLoading(true);
     setResult(null);
 
-    const fakeToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.demo.token';
-    const authHeader = `Bearer ${fakeToken}`;
+    const authHeader = accessToken ? `Bearer ${accessToken}` : '';
 
     try {
       const response = await fetch(endpoint.path, {
@@ -58,7 +57,7 @@ export function EndpointCard({ endpoint }: EndpointCardProps) {
         setResult({
           status: 'forbidden',
           statusCode: 403,
-          message: `Forbidden: missing required scope '${endpoint.requiredScope}'`,
+          message: `Forbidden — required group: ${endpoint.requiredGroup}`,
           response: data,
           authHeader,
         });
@@ -100,9 +99,9 @@ export function EndpointCard({ endpoint }: EndpointCardProps) {
           </div>
           <p className="text-slate-400 text-sm mb-2">{endpoint.description}</p>
           <div className="flex items-center gap-2">
-            <span className="text-xs text-slate-500">Required scope:</span>
+            <span className="text-xs text-slate-500">Required group:</span>
             <span className="text-xs font-mono bg-slate-900 px-2 py-1 rounded text-purple-400 border border-slate-700">
-              {endpoint.requiredScope}
+              {endpoint.requiredGroup}
             </span>
           </div>
         </div>
