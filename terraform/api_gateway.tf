@@ -1,9 +1,9 @@
 locals {
   endpoints = {
-    endpoint1 = { method = "GET",    scope = "myapi/read" }
-    endpoint2 = { method = "POST",   scope = "myapi/write" }
-    endpoint3 = { method = "PUT",    scope = "myapi/write" }
-    endpoint4 = { method = "GET",    scope = "myapi/admin" }
+    endpoint1 = { method = "GET",  required_group = "customer | admin" }
+    endpoint2 = { method = "POST", required_group = "customer | admin" }
+    endpoint3 = { method = "PUT",  required_group = "admin" }
+    endpoint4 = { method = "GET",  required_group = "admin" }
   }
 }
 

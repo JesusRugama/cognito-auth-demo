@@ -2,7 +2,7 @@
 
 ## Overview
 
-This project demonstrates **scope-based authorization** using AWS Cognito custom OAuth scopes. A single user authenticates through different Cognito app clients and receives different access tokens — each containing a distinct set of scopes that API Gateway enforces at the method level.
+This project demonstrates **groups-based authorization** using AWS Cognito. Users authenticate through a custom login form (no Hosted UI) using one of two app clients. A Lambda authorizer on API Gateway reads `cognito:groups` and `client_id` from the JWT to enforce per-endpoint access rules.
 
 ---
 
@@ -11,43 +11,46 @@ This project demonstrates **scope-based authorization** using AWS Cognito custom
 ```mermaid
 flowchart LR
     subgraph Browser
-        A[React App<br/>viewer.demo.com]
-        B[React App<br/>admin.demo.com]
+        A[React App<br/>cognito-auth.demos.jesusrugama.com]
     end
 
     subgraph AWS Cognito
         UP[User Pool]
-        RS[Resource Server<br/>myapi]
-        VC[ViewerClient<br/>openid, profile,<br/>myapi/read]
-        AC[AdminClient<br/>openid, profile,<br/>myapi/read, myapi/write,<br/>myapi/admin]
+        GC[Group: customer]
+        GA[Group: admin]
+        CC[customer-app client]
+        AC[admin-app client]
+        PA[Pre-Auth Lambda<br/>blocks wrong client]
     end
 
     subgraph API Layer
         APIGW[API Gateway<br/>REST API]
-        AUTH[Cognito<br/>Authorizer]
-        L1[Lambda<br/>endpoint1]
-        L2[Lambda<br/>endpoint2]
-        L3[Lambda<br/>endpoint3]
-        L4[Lambda<br/>endpoint4]
+        AUTH[Lambda Authorizer<br/>checks groups + client_id]
+        L1[Lambda endpoint1]
+        L2[Lambda endpoint2]
+        L3[Lambda endpoint3]
+        L4[Lambda endpoint4]
     end
 
     subgraph Hosting
-        S3[S3 Bucket<br/>Static Assets]
-        CF[CloudFront<br/>CDN + HTTPS]
-        R53[Route 53<br/>Subdomains]
-        ACM[ACM<br/>Wildcard Cert]
+        S3[S3 Bucket]
+        CF[CloudFront CDN]
+        R53[Route 53]
+        ACM[ACM Cert]
     end
 
-    A -->|Auth via ViewerClient| UP
-    B -->|Auth via AdminClient| UP
-    UP --> RS
-    RS --> VC
-    RS --> AC
+    A -->|InitiateAuth SRP| UP
+    UP --> PA
+    PA -->|allow/deny| UP
+    UP --> GC
+    UP --> GA
+    UP --> CC
+    UP --> AC
 
     A -->|Bearer Token| APIGW
-    B -->|Bearer Token| APIGW
     APIGW --> AUTH
-    AUTH -->|Validate + Check Scopes| UP
+    AUTH -->|verify JWT + check groups| UP
+    AUTH -->|allow| APIGW
     APIGW --> L1
     APIGW --> L2
     APIGW --> L3
@@ -55,7 +58,7 @@ flowchart LR
 
     R53 --> CF
     CF --> S3
-    ACM -.->|*.demo.com| CF
+    ACM -.-> CF
 ```
 
 ---
@@ -67,21 +70,28 @@ sequenceDiagram
     participant U as User
     participant App as React App
     participant Cog as Cognito User Pool
+    participant PA as Pre-Auth Lambda
     participant APIGW as API Gateway
-    participant Lambda as Lambda
+    participant Authz as Lambda Authorizer
+    participant L as Lambda
 
-    U->>App: Opens viewer.demo.com
-    App->>App: Detects subdomain → selects ViewerClient ID
+    U->>App: Selects app client (customer / admin)
     U->>App: Enters email + password
-    App->>Cog: InitiateAuth (SRP) via ViewerClient
-    Cog-->>App: Access Token (scopes: openid, profile, myapi/read)
-    App->>App: Decode JWT → display scope badges
-    U->>App: Clicks "Test" on /api/endpoint2 (requires myapi/write)
-    App->>APIGW: GET /api/endpoint2 — Authorization: Bearer <token>
-    APIGW->>Cog: Validate token + check required scope (myapi/write)
-    Cog-->>APIGW: Token valid, but scope missing
+    App->>Cog: InitiateAuth (SRP) with selected client_id
+    Cog->>PA: Pre-Authentication trigger
+    PA->>Cog: AdminListGroupsForUser
+    Cog-->>PA: User groups
+    PA-->>Cog: Allow or throw error
+    Cog-->>App: ID Token + Access Token (includes cognito:groups)
+    App->>App: Decode JWT → display group badges
+    U->>App: Clicks "Test" on /endpoint3 (admin only)
+    App->>APIGW: PUT /endpoint3 — Authorization: Bearer <token>
+    APIGW->>Authz: Invoke with token
+    Authz->>Authz: Verify JWT signature (JWKS)
+    Authz->>Authz: Check cognito:groups + client_id
+    Authz-->>APIGW: Deny (customer group, admin-only endpoint)
     APIGW-->>App: 403 Forbidden
-    App-->>U: "Access Denied ✗ — Missing scope: myapi/write"
+    App-->>U: "Access Denied ✗"
 ```
 
 ---
@@ -92,125 +102,130 @@ sequenceDiagram
 
 | Service | Role |
 |---|---|
-| **Cognito User Pool** | User directory, authentication, token issuance. Houses the custom resource server and both app clients. |
-| **Resource Server** | Defines the `myapi` identifier and custom scopes (`read`, `write`, `admin`). |
-| **API Gateway (REST)** | Exposes 4 endpoints. Each method is configured with a Cognito Authorizer and a list of required OAuth scopes. |
-| **Lambda** | Simple handler functions behind each endpoint. Return `200 OK` with a JSON message. Scope enforcement happens at the Gateway level, not inside Lambda. |
+| **Cognito User Pool** | User directory, authentication, token issuance. Contains two groups (`customer`, `admin`) and two app clients. |
+| **Pre-Authentication Lambda** | Invoked before password validation. Blocks users from logging in through the wrong app client. |
+| **API Gateway (REST)** | Exposes 4 endpoints. Each method uses a Lambda authorizer for access control. |
+| **Lambda Authorizer** | Verifies the JWT signature using Cognito's JWKS, reads `cognito:groups` and `client_id`, and returns allow/deny. |
+| **Lambda (endpoints)** | Simple handlers returning `200 OK` with JSON. Authorization happens at the Gateway level before Lambda is invoked. |
 | **S3** | Hosts the static React build (`dist/`). |
-| **CloudFront** | CDN distribution fronting the S3 origin. Provides HTTPS via ACM certificate. |
-| **Route 53** | DNS records for `viewer.yourdemo.com` and `admin.yourdemo.com`, both pointing to CloudFront. |
-| **ACM** | Wildcard TLS certificate (`*.yourdemo.com`) attached to CloudFront. |
-| **IAM** | Execution roles for Lambda, deploy roles for GitHub Actions. |
+| **CloudFront** | CDN fronting S3. Provides HTTPS via ACM certificate. |
+| **Route 53** | DNS record for `cognito-auth.demos.jesusrugama.com`. |
+| **ACM** | TLS certificate attached to CloudFront. |
+| **IAM** | Execution role for all Lambda functions. |
 
 ### Frontend Components
 
 | Component | Responsibility |
 |---|---|
-| `AuthContext` | Manages user state, login/logout, role switching. Stores session in `localStorage`. |
-| `Auth` page | Login/Register tabs with form validation and demo-credential auto-fill. |
-| `Dashboard` page | Displays scope badges, role-switch buttons, and the endpoint tester grid. |
-| `EndpointCard` | Fires test requests, shows ✓ Allowed or ✗ Access Denied with expandable details (Authorization header, response body). |
+| `AuthContext` | Manages Cognito SRP login/logout via `amazon-cognito-identity-js`. Stores tokens in memory. |
+| `Auth` page | Login form with app client selector (Customer / Admin). |
+| `Dashboard` page | Displays group badges, app client switcher, and endpoint tester grid. |
+| `EndpointCard` | Fires test requests with Bearer token, shows ✓ Allowed or ✗ Access Denied. |
 | `ProtectedRoute` | Guards the dashboard — redirects unauthenticated users to login. |
 
 ---
 
 ## Data Flow
 
-1. **Subdomain detection** — React reads `window.location.hostname` to determine whether the user is on the Viewer or Admin subdomain and selects the corresponding Cognito app client ID.
-2. **Authentication** — The app uses SRP (Secure Remote Password) auth via the selected client. Cognito returns an access token containing only the scopes allowed for that client.
-3. **Token storage** — Tokens are stored in-memory (or `localStorage` for the demo). The access token JWT is decoded client-side to extract and display scopes.
-4. **API calls** — Each endpoint card sends a request with `Authorization: Bearer <access_token>`. API Gateway's Cognito Authorizer validates the token and checks the method's required scopes.
-5. **Enforcement** — If the token's scopes satisfy the method requirement → `200 OK` from Lambda. If not → `403 Forbidden` from API Gateway (before Lambda is even invoked).
+1. **App client selection** — User picks Customer or Admin app client at login. The frontend uses the corresponding Cognito `client_id` for `InitiateAuth`.
+2. **Pre-Authentication** — Cognito invokes the Pre-Auth Lambda before validating the password. The Lambda calls `AdminListGroupsForUser` and blocks the login if the user's group doesn't match the app client.
+3. **Token issuance** — Cognito returns tokens. The ID/Access token automatically includes `cognito:groups` — no custom claims needed.
+4. **Token storage** — Tokens stored in memory (via `amazon-cognito-identity-js` session). Decoded client-side to display group badges.
+5. **API calls** — Each endpoint card sends `Authorization: Bearer <token>`. The Lambda authorizer verifies the JWT and checks groups + client_id.
+6. **Enforcement** — Group allowed + client allowed → `200 OK` from Lambda. Otherwise → `403 Forbidden` from API Gateway.
 
 ---
 
-## Scope Enforcement Model
+## Authorization Model
 
 ```
 ┌─────────────────────────────────────────────────────────┐
 │                    Cognito User Pool                     │
 │                                                         │
-│  Resource Server: myapi                                 │
-│  ├── myapi/read                                         │
-│  ├── myapi/write                                        │
-│  └── myapi/admin                                        │
+│  Groups: customer, admin                                │
+│  App Clients: customer-app, admin-app                   │
 │                                                         │
-│  ViewerClient  → allowed: openid, profile, myapi/read   │
-│  AdminClient   → allowed: openid, profile, myapi/read,  │
-│                           myapi/write, myapi/admin       │
+│  JWT includes: cognito:groups, client_id automatically  │
 └─────────────────────────────────────────────────────────┘
                          │
-                    Access Token
+                    Bearer Token
                          │
                          ▼
 ┌─────────────────────────────────────────────────────────┐
-│                    API Gateway                           │
+│                  Lambda Authorizer                       │
 │                                                         │
-│  GET  /api/endpoint1  → requires: myapi/read            │
-│  POST /api/endpoint2  → requires: myapi/write           │
-│  PUT  /api/endpoint3  → requires: myapi/write           │
-│  GET  /api/endpoint4  → requires: myapi/admin            │
+│  1. Verify JWT signature (Cognito JWKS)                 │
+│  2. Read cognito:groups + client_id from token          │
+│  3. Check endpoint permission map:                      │
+│                                                         │
+│  /endpoint1 → customer | admin, any client              │
+│  /endpoint2 → customer | admin, any client              │
+│  /endpoint3 → admin only, admin-app client              │
+│  /endpoint4 → admin only, admin-app client              │
 └─────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## Restricting Login per App Client
+## Pre-Authentication Flow
 
-Cognito scopes control what an authenticated user **can do**, but they don't control **who can log in** through a given app client. A customer could authenticate through the Admin client and receive admin scopes.
-
-To prevent this, attach a **Pre-Authentication Lambda Trigger** to the User Pool. Cognito invokes this Lambda automatically before validating the password:
+The Pre-Auth Lambda prevents users from obtaining tokens through the wrong app client:
 
 ```
 User submits login
        ↓
-Cognito receives the request
+Cognito receives InitiateAuth request
        ↓
-Cognito invokes Pre-Authentication Lambda (automatic)
+Cognito invokes Pre-Authentication Lambda
        ↓
-Lambda checks: is this user allowed on this app client?
+Lambda calls AdminListGroupsForUser
+       ↓
+  customer-app + admin user   → ❌ blocked (admin must use admin-app)
+  admin-app + non-admin user  → ❌ blocked (only admins on admin-app)
+  customer-app + customer     → ✅ allowed
+  admin-app + admin           → ✅ allowed
+  customer-app + admin        → ✅ allowed (admin can use customer app at customer level)
        ↓
   Allow → Cognito validates password → token issued
-  Deny  → Cognito rejects login (no token, no password check)
+  Deny  → Cognito rejects login entirely
 ```
-
-The Lambda inspects `event.callerContext.clientId` and the user's group membership. If a non-admin user tries to log in through the Admin client, the Lambda throws an error and Cognito denies the login entirely.
-
-### When Scopes Aren't Enough
-
-| Requirement | Solution |
-|---|---|
-| Same user, different access per **client** | Cognito custom scopes (this demo) |
-| Block specific users from a **client** | Pre-Authentication Lambda trigger |
-| Per-user or per-resource permissions | Cognito groups + custom claims, or Amazon Verified Permissions (AVP) |
-| URL-pattern rules like `/admin/*`, `/customer/{id}/*` | AVP with Cedar policies |
-
-AVP (Amazon Verified Permissions) is the right tool when you need **row-level** or **path-based** access control — for example, allowing a user to access only `/customer/{theirOwnId}/*`. It uses Cedar allow/deny policies evaluated by a Lambda authorizer. For client-level access differences like this demo, scopes are simpler and free.
 
 ---
 
-## Infrastructure-as-Code (Terraform)
+## When to Use Other Patterns
 
-All resources are provisioned via Terraform with a remote S3 backend for state management and DynamoDB for state locking. Planned module structure:
+| Requirement | Solution |
+|---|---|
+| Groups-based access (this demo) | `cognito:groups` in JWT + Lambda authorizer |
+| Block users from wrong app client | Pre-Authentication Lambda trigger |
+| Per-user or per-resource permissions | Amazon Verified Permissions (AVP) + Cedar policies |
+| Federated login (Google, etc.) | Cognito Identity Federation + Post Confirmation trigger for group assignment |
+| Machine-to-machine auth | Client Credentials grant (no user involved) |
+
+---
+
+## Infrastructure (Terraform)
 
 ```
 terraform/
-├── backend.tf            # Remote state (S3 + DynamoDB)
-├── main.tf               # Root module composition
-├── variables.tf          # Input variables
-├── outputs.tf            # Exported values (pool ID, client IDs, API URL)
-├── modules/
-│   ├── cognito/          # User pool, resource server, app clients
-│   ├── api-gateway/      # REST API, methods, Cognito authorizer
-│   ├── lambda/           # Function code, IAM roles
-│   ├── hosting/          # S3 bucket, CloudFront, ACM cert
-│   └── dns/              # Route 53 records for subdomains
+├── backend.tf        # Remote state (S3 + DynamoDB)
+├── cognito.tf        # User Pool, Groups, App Clients, Pre-Auth Lambda
+├── api_gateway.tf    # REST API, methods, Lambda authorizer
+├── lambda.tf         # Endpoint Lambda functions + IAM role
+├── lambda_iam.tf     # IAM role definition
+├── variables.tf      # Input variables
+├── outputs.tf        # User Pool ID, Client IDs, API URL
+├── s3.tf             # Static hosting bucket
+├── cloudfront.tf     # CDN distribution
+├── route53.tf        # DNS records
+└── acm.tf            # TLS certificate
 ```
 
 ---
 
 ## References
 
-- [Cognito Resource Servers](https://docs.aws.amazon.com/cognito/latest/developerguide/cognito-user-pools-define-resource-servers.html)
-- [API Gateway Cognito Authorizer](https://docs.aws.amazon.com/apigateway/latest/developerguide/apigateway-integrate-with-cognito.html)
+- [Cognito User Pool Groups](https://docs.aws.amazon.com/cognito/latest/developerguide/cognito-user-pools-user-groups.html)
+- [API Gateway Lambda Authorizer](https://docs.aws.amazon.com/apigateway/latest/developerguide/apigateway-use-lambda-authorizer.html)
+- [Cognito Pre-Authentication Trigger](https://docs.aws.amazon.com/cognito/latest/developerguide/user-pool-lambda-pre-authentication.html)
 - [CloudFront + S3 Origin](https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/DownloadDistS3AndCustomOrigins.html)

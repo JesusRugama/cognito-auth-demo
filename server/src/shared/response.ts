@@ -5,7 +5,7 @@ export interface SuccessBody {
   endpoint: string;
   method: string;
   message: string;
-  requiredScope: string;
+  requiredGroup: string;
   timestamp: string;
   requestId: string;
 }

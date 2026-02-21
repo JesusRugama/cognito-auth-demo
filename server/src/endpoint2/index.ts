@@ -6,7 +6,7 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
     endpoint: 'endpoint2',
     method: event.httpMethod,
     message: 'Create New Address — action permitted',
-    requiredScope: 'myapi/write',
+    requiredGroup: 'customer | admin',
     timestamp: new Date().toISOString(),
     requestId: event.requestContext.requestId,
   });

@@ -6,7 +6,7 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
     endpoint: 'endpoint4',
     method: event.httpMethod,
     message: 'List Users — action permitted',
-    requiredScope: 'myapi/admin',
+    requiredGroup: 'admin',
     timestamp: new Date().toISOString(),
     requestId: event.requestContext.requestId,
   });
