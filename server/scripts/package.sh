@@ -6,7 +6,7 @@ ZIPS="$ROOT/zips"
 
 mkdir -p "$ZIPS"
 
-HANDLERS="endpoint1 endpoint2 endpoint3 endpoint4"
+HANDLERS="endpoint1 endpoint2 endpoint3 endpoint4 pre-auth authorizer"
 
 echo "Bundling and packaging Lambda handlers..."
 

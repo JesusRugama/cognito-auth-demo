@@ -7,8 +7,13 @@
     "package": "sh scripts/package.sh",
     "deploy": "sh scripts/deploy.sh"
   },
+  "dependencies": {
+    "@aws-sdk/client-cognito-identity-provider": "^3.0.0",
+    "jsonwebtoken": "^9.0.0"
+  },
   "devDependencies": {
     "@types/aws-lambda": "^8.10.145",
+    "@types/jsonwebtoken": "^9.0.0",
     "@types/node": "^20.0.0",
     "esbuild": "^0.27.3",
     "typescript": "^5.5.3"
