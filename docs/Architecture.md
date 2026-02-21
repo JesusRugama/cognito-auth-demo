@@ -149,7 +149,7 @@ sequenceDiagram
 │  GET  /api/endpoint1  → requires: myapi/read            │
 │  POST /api/endpoint2  → requires: myapi/write           │
 │  PUT  /api/endpoint3  → requires: myapi/write           │
-│  DEL  /api/endpoint4  → requires: myapi/admin           │
+│  GET  /api/endpoint4  → requires: myapi/admin            │
 └─────────────────────────────────────────────────────────┘
 ```
 

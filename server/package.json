@@ -3,13 +3,14 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "build": "tsc",
+    "typecheck": "tsc --noEmit",
     "package": "sh scripts/package.sh",
     "deploy": "sh scripts/deploy.sh"
   },
   "devDependencies": {
     "@types/aws-lambda": "^8.10.145",
     "@types/node": "^20.0.0",
+    "esbuild": "^0.27.3",
     "typescript": "^5.5.3"
   }
 }

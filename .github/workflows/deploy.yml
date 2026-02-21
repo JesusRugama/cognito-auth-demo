@@ -59,9 +59,9 @@ jobs:
         working-directory: server
         run: npm ci
 
-      - name: Build server
+      - name: Typecheck server
         working-directory: server
-        run: npm run build
+        run: npm run typecheck
 
       - name: Package Lambda zips
         working-directory: server
