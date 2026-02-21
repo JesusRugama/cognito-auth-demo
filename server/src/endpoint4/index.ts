@@ -5,7 +5,7 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
   return ok({
     endpoint: 'endpoint4',
     method: event.httpMethod,
-    message: 'Delete Record — action permitted',
+    message: 'List Users — action permitted',
     requiredScope: 'myapi/admin',
     timestamp: new Date().toISOString(),
     requestId: event.requestContext.requestId,

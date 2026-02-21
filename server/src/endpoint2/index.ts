@@ -5,7 +5,7 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
   return ok({
     endpoint: 'endpoint2',
     method: event.httpMethod,
-    message: 'Create New User — action permitted',
+    message: 'Create New Address — action permitted',
     requiredScope: 'myapi/write',
     timestamp: new Date().toISOString(),
     requestId: event.requestContext.requestId,

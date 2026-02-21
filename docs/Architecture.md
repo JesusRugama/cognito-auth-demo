@@ -155,6 +155,40 @@ sequenceDiagram
 
 ---
 
+## Restricting Login per App Client
+
+Cognito scopes control what an authenticated user **can do**, but they don't control **who can log in** through a given app client. A customer could authenticate through the Admin client and receive admin scopes.
+
+To prevent this, attach a **Pre-Authentication Lambda Trigger** to the User Pool. Cognito invokes this Lambda automatically before validating the password:
+
+```
+User submits login
+       ↓
+Cognito receives the request
+       ↓
+Cognito invokes Pre-Authentication Lambda (automatic)
+       ↓
+Lambda checks: is this user allowed on this app client?
+       ↓
+  Allow → Cognito validates password → token issued
+  Deny  → Cognito rejects login (no token, no password check)
+```
+
+The Lambda inspects `event.callerContext.clientId` and the user's group membership. If a non-admin user tries to log in through the Admin client, the Lambda throws an error and Cognito denies the login entirely.
+
+### When Scopes Aren't Enough
+
+| Requirement | Solution |
+|---|---|
+| Same user, different access per **client** | Cognito custom scopes (this demo) |
+| Block specific users from a **client** | Pre-Authentication Lambda trigger |
+| Per-user or per-resource permissions | Cognito groups + custom claims, or Amazon Verified Permissions (AVP) |
+| URL-pattern rules like `/admin/*`, `/customer/{id}/*` | AVP with Cedar policies |
+
+AVP (Amazon Verified Permissions) is the right tool when you need **row-level** or **path-based** access control — for example, allowing a user to access only `/customer/{theirOwnId}/*`. It uses Cedar allow/deny policies evaluated by a Lambda authorizer. For client-level access differences like this demo, scopes are simpler and free.
+
+---
+
 ## Infrastructure-as-Code (Terraform)
 
 All resources are provisioned via Terraform with a remote S3 backend for state management and DynamoDB for state locking. Planned module structure:
