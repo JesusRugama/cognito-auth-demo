@@ -14,6 +14,7 @@ env:
   AWS_REGION: us-east-1
   S3_BUCKET: jesusrugama.demos.cognito-scopes
   CLOUDFRONT_DISTRIBUTION_ID: E2SU6OE8HET74Q
+  VITE_API_BASE_URL: https://b5og4iojo5.execute-api.us-east-1.amazonaws.com/prod
 
 jobs:
   deploy:
@@ -50,7 +51,7 @@ jobs:
         working-directory: client
         run: npm run build
         env:
-          VITE_API_BASE_URL: ${{ secrets.VITE_API_BASE_URL }}
+          VITE_API_BASE_URL: ${{ env.VITE_API_BASE_URL }}
 
       - name: Deploy client to S3
         run: |
