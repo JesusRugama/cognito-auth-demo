@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { User, UserRole, SCOPE_CONFIGS } from '../types/auth';
+import { User, UserRole, GROUP_CONFIGS } from '../types/auth';
 
 interface AuthContextType {
   user: User | null;
@@ -21,12 +21,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  const login = (email: string, password: string, role: UserRole = 'viewer'): boolean => {
-    if (email === 'user@demo.com' && password === 'Admin123!') {
+  const login = (email: string, password: string, role: UserRole = 'customer'): boolean => {
+    if (email === 'user@demo.com' && password === 'Demo123!') {
       const newUser: User = {
         email,
         role,
-        scopes: SCOPE_CONFIGS[role],
+        groups: GROUP_CONFIGS[role],
       };
       setUser(newUser);
       localStorage.setItem('cognito_demo_user', JSON.stringify(newUser));
@@ -45,7 +45,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const updatedUser: User = {
         ...user,
         role,
-        scopes: SCOPE_CONFIGS[role],
+        groups: GROUP_CONFIGS[role],
       };
       setUser(updatedUser);
       localStorage.setItem('cognito_demo_user', JSON.stringify(updatedUser));

@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { Shield, Mail, Lock, AlertCircle } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
-import { DEMO_CREDENTIALS } from '../types/auth';
 
 interface AuthProps {
   onLoginSuccess: () => void;
@@ -29,7 +28,7 @@ export function Auth({ onLoginSuccess }: AuthProps) {
       return;
     }
 
-    const success = login(email, password, 'viewer');
+    const success = login(email, password, 'customer');
     if (success) {
       onLoginSuccess();
     } else {
@@ -65,9 +64,9 @@ export function Auth({ onLoginSuccess }: AuthProps) {
   };
 
   const fillDemoCredentials = () => {
-    setEmail(DEMO_CREDENTIALS.email);
-    setPassword(DEMO_CREDENTIALS.password);
-    setConfirmPassword(DEMO_CREDENTIALS.password);
+    setEmail('user@demo.com');
+    setPassword('Demo123!');
+    setConfirmPassword('Demo123!');
     setError('');
   };
 
@@ -79,7 +78,7 @@ export function Auth({ onLoginSuccess }: AuthProps) {
             <Shield className="w-8 h-8 text-white" />
           </div>
           <h1 className="text-3xl font-bold text-white mb-2">
-            Cognito Scopes Demo
+            Cognito Auth Demo
           </h1>
           <p className="text-slate-400">Admin Portal</p>
         </div>
@@ -230,10 +229,10 @@ export function Auth({ onLoginSuccess }: AuthProps) {
               </p>
               <div className="space-y-1 mb-3">
                 <p className="text-sm font-mono text-slate-300">
-                  Email: <span className="text-blue-400">{DEMO_CREDENTIALS.email}</span>
+                  Email: <span className="text-blue-400">user@demo.com</span>
                 </p>
                 <p className="text-sm font-mono text-slate-300">
-                  Password: <span className="text-blue-400">{DEMO_CREDENTIALS.password}</span>
+                  Password: <span className="text-blue-400">Demo123!</span>
                 </p>
               </div>
               <button
@@ -247,7 +246,7 @@ export function Auth({ onLoginSuccess }: AuthProps) {
         </div>
 
         <p className="text-center text-sm text-slate-500 mt-6">
-          Real Cognito integration coming later
+          Powered by Amazon Cognito
         </p>
       </div>
     </div>

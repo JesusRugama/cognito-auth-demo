@@ -1,9 +1,9 @@
-export type UserRole = 'viewer' | 'admin';
+export type UserRole = 'customer' | 'admin';
 
 export interface User {
   email: string;
   role: UserRole;
-  scopes: string[];
+  groups: string[];
 }
 
 export interface AuthState {
@@ -11,12 +11,7 @@ export interface AuthState {
   isAuthenticated: boolean;
 }
 
-export const DEMO_CREDENTIALS = {
-  email: 'user@demo.com',
-  password: 'Admin123!',
-};
-
-export const SCOPE_CONFIGS = {
-  viewer: ['openid', 'profile', 'myapi/read'],
-  admin: ['openid', 'profile', 'myapi/read', 'myapi/write', 'myapi/admin'],
+export const GROUP_CONFIGS: Record<UserRole, string[]> = {
+  customer: ['endpoint1', 'endpoint2'],
+  admin: ['endpoint1', 'endpoint2', 'endpoint3', 'endpoint4'],
 };

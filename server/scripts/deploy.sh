@@ -17,7 +17,7 @@ echo "Deploying Lambda zips to s3://$S3_BUCKET/server/..."
 for name in $HANDLERS; do
   ZIP="$ZIPS/${name}.zip"
   S3_KEY="s3://$S3_BUCKET/server/${name}.zip"
-  FUNCTION_NAME="demo-cognito-scopes-${name}"
+  FUNCTION_NAME="demo-cognito-auth-${name}"
 
   aws s3 cp "$ZIP" "$S3_KEY"
   echo "✓ Uploaded $S3_KEY"

@@ -1,5 +1,5 @@
 resource "aws_iam_role" "lambda_exec" {
-  name = "demo-cognito-scopes-lambda-role"
+  name = "demo-cognito-auth-lambda-role"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -20,17 +20,17 @@ resource "aws_iam_role_policy_attachment" "lambda_basic_execution" {
 
 locals {
   lambda_handlers = {
-    endpoint1 = { description = "Read User's addresses list — requires myapi/read" }
-    endpoint2 = { description = "Create New Address — requires myapi/write" }
-    endpoint3 = { description = "Update Address — requires myapi/write" }
-    endpoint4 = { description = "List Users — requires myapi/admin" }
+    endpoint1 = { description = "Read User's addresses list — customer + admin" }
+    endpoint2 = { description = "Create New Address — customer + admin" }
+    endpoint3 = { description = "Update Address — admin only" }
+    endpoint4 = { description = "List Users — admin only" }
   }
 }
 
 resource "aws_lambda_function" "api" {
   for_each = local.lambda_handlers
 
-  function_name = "demo-cognito-scopes-${each.key}"
+  function_name = "demo-cognito-auth-${each.key}"
   description   = each.value.description
   role          = aws_iam_role.lambda_exec.arn
   runtime       = "nodejs20.x"

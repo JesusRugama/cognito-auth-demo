@@ -1,5 +1,5 @@
 {
-  "name": "cognito-scopes-demo-client",
+  "name": "cognito-auth-demo-client",
   "private": true,
   "version": "0.0.0",
   "type": "module",

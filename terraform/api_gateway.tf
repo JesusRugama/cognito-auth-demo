@@ -10,8 +10,8 @@ locals {
 # ---- REST API ----
 
 resource "aws_api_gateway_rest_api" "main" {
-  name        = "demo-cognito-scopes"
-  description = "API demonstrating Cognito custom OAuth scope enforcement"
+  name        = "demo-cognito-auth"
+  description = "API demonstrating Cognito authentication and authorization patterns"
 
   endpoint_configuration {
     types = ["REGIONAL"]
@@ -102,7 +102,7 @@ resource "aws_api_gateway_integration_response" "options" {
   response_parameters = {
     "method.response.header.Access-Control-Allow-Headers" = "'Authorization,Content-Type'"
     "method.response.header.Access-Control-Allow-Methods" = "'GET,POST,PUT,DELETE,OPTIONS'"
-    "method.response.header.Access-Control-Allow-Origin"  = "'https://cognito-scopes.demos.jesusrugama.com'"
+    "method.response.header.Access-Control-Allow-Origin"  = "'https://cognito-auth.demos.jesusrugama.com'"
   }
 
   depends_on = [

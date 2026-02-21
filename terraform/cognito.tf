@@ -1,7 +1,7 @@
 # ---- User Pool ----
 
 resource "aws_cognito_user_pool" "main" {
-  name = "demo-cognito-scopes"
+  name = "demo-cognito-auth"
 
   username_attributes      = ["email"]
   auto_verified_attributes = ["email"]
@@ -62,7 +62,7 @@ resource "aws_cognito_user_pool_client" "admin" {
 # ---- Pre-Authentication Lambda ----
 
 # resource "aws_lambda_function" "pre_auth" {
-#   function_name = "demo-cognito-scopes-pre-auth"
+#   function_name = "demo-cognito-auth-pre-auth"
 #   description   = "Blocks users from logging in through the wrong App Client"
 #   role          = aws_iam_role.lambda_exec.arn
 #   runtime       = "nodejs20.x"
@@ -90,7 +90,7 @@ resource "aws_cognito_user_pool_client" "admin" {
 # ---- Lambda Authorizer ----
 
 # resource "aws_lambda_function" "authorizer" {
-#   function_name = "demo-cognito-scopes-authorizer"
+#   function_name = "demo-cognito-auth-authorizer"
 #   description   = "API Gateway Lambda authorizer — checks cognito:groups and client_id"
 #   role          = aws_iam_role.lambda_exec.arn
 #   runtime       = "nodejs20.x"
