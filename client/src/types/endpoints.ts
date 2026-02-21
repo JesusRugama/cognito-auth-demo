@@ -4,41 +4,38 @@ export interface Endpoint {
   path: string;
   description: string;
   requiredScope: string;
-  simulateUrl: string;
 }
+
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? '';
 
 export const API_ENDPOINTS: Endpoint[] = [
   {
     id: 'endpoint1',
     method: 'GET',
-    path: '/api/endpoint1',
-    description: 'Read Users List',
+    path: `${API_BASE_URL}/endpoint1`,
+    description: "Read User's addresses list",
     requiredScope: 'myapi/read',
-    simulateUrl: 'https://httpbin.org/status/200',
   },
   {
     id: 'endpoint2',
     method: 'POST',
-    path: '/api/endpoint2',
-    description: 'Create New User',
+    path: `${API_BASE_URL}/endpoint2`,
+    description: 'Create New Address',
     requiredScope: 'myapi/write',
-    simulateUrl: 'https://httpbin.org/status/200',
   },
   {
     id: 'endpoint3',
     method: 'PUT',
-    path: '/api/endpoint3',
-    description: 'Update User',
+    path: `${API_BASE_URL}/endpoint3`,
+    description: 'Update Address',
     requiredScope: 'myapi/write',
-    simulateUrl: 'https://httpbin.org/status/200',
   },
   {
     id: 'endpoint4',
-    method: 'DELETE',
-    path: '/api/endpoint4',
-    description: 'Delete Record',
+    method: 'GET',
+    path: `${API_BASE_URL}/endpoint4`,
+    description: 'List Users',
     requiredScope: 'myapi/admin',
-    simulateUrl: 'https://httpbin.org/status/200',
   },
 ];
 
@@ -46,6 +43,6 @@ export interface TestResult {
   status: 'success' | 'forbidden' | 'error';
   statusCode: number;
   message: string;
-  response?: unknown;
+  response?: Record<string, unknown>;
   authHeader?: string;
 }

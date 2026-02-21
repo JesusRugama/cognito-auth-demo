@@ -39,6 +39,65 @@ resource "aws_api_gateway_method" "endpoint" {
   authorization = "NONE" # Will be updated to COGNITO_USER_POOLS after Cognito is created
 }
 
+# ---- OPTIONS methods (CORS preflight) ----
+
+resource "aws_api_gateway_method" "options" {
+  for_each = local.endpoints
+
+  rest_api_id   = aws_api_gateway_rest_api.main.id
+  resource_id   = aws_api_gateway_resource.endpoint[each.key].id
+  http_method   = "OPTIONS"
+  authorization = "NONE"
+}
+
+resource "aws_api_gateway_integration" "options" {
+  for_each = local.endpoints
+
+  rest_api_id = aws_api_gateway_rest_api.main.id
+  resource_id = aws_api_gateway_resource.endpoint[each.key].id
+  http_method = aws_api_gateway_method.options[each.key].http_method
+  type        = "MOCK"
+
+  request_templates = {
+    "application/json" = "{\"statusCode\": 200}"
+  }
+}
+
+resource "aws_api_gateway_method_response" "options" {
+  for_each = local.endpoints
+
+  rest_api_id = aws_api_gateway_rest_api.main.id
+  resource_id = aws_api_gateway_resource.endpoint[each.key].id
+  http_method = aws_api_gateway_method.options[each.key].http_method
+  status_code = "200"
+
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Headers" = true
+    "method.response.header.Access-Control-Allow-Methods" = true
+    "method.response.header.Access-Control-Allow-Origin"  = true
+  }
+}
+
+resource "aws_api_gateway_integration_response" "options" {
+  for_each = local.endpoints
+
+  rest_api_id = aws_api_gateway_rest_api.main.id
+  resource_id = aws_api_gateway_resource.endpoint[each.key].id
+  http_method = aws_api_gateway_method.options[each.key].http_method
+  status_code = "200"
+
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Headers" = "'Authorization,Content-Type'"
+    "method.response.header.Access-Control-Allow-Methods" = "'GET,POST,PUT,DELETE,OPTIONS'"
+    "method.response.header.Access-Control-Allow-Origin"  = "'https://cognito-scopes.demos.jesusrugama.com'"
+  }
+
+  depends_on = [
+    aws_api_gateway_integration.options,
+    aws_api_gateway_method_response.options,
+  ]
+}
+
 # ---- Lambda integrations ----
 
 resource "aws_api_gateway_integration" "endpoint" {
@@ -74,6 +133,9 @@ resource "aws_api_gateway_deployment" "main" {
       aws_api_gateway_resource.endpoint,
       aws_api_gateway_method.endpoint,
       aws_api_gateway_integration.endpoint,
+      aws_api_gateway_method.options,
+      aws_api_gateway_integration.options,
+      aws_api_gateway_integration_response.options,
     ]))
   }
 

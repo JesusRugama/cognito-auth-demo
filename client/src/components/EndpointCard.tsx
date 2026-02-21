@@ -11,7 +11,7 @@ export function EndpointCard({ endpoint }: EndpointCardProps) {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<TestResult | null>(null);
   const [showDetails, setShowDetails] = useState(false);
-  const { user } = useAuth();
+  useAuth();
 
   const getMethodColor = (method: string) => {
     switch (method) {
@@ -28,38 +28,38 @@ export function EndpointCard({ endpoint }: EndpointCardProps) {
     }
   };
 
-  const hasRequiredScope = user?.scopes.includes(endpoint.requiredScope) || false;
-
   const testEndpoint = async () => {
     setLoading(true);
     setResult(null);
 
-    await new Promise((resolve) => setTimeout(resolve, 800));
-
     const fakeToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.demo.token';
     const authHeader = `Bearer ${fakeToken}`;
 
-    if (!hasRequiredScope) {
-      setResult({
-        status: 'forbidden',
-        statusCode: 403,
-        message: `Forbidden: missing required scope '${endpoint.requiredScope}'`,
-        authHeader,
-      });
-      setLoading(false);
-      setShowDetails(true);
-      return;
-    }
-
     try {
-      const response = await fetch(endpoint.simulateUrl);
+      const response = await fetch(endpoint.path, {
+        method: endpoint.method,
+        headers: {
+          Authorization: authHeader,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      const data = await response.json();
 
       if (response.ok) {
         setResult({
           status: 'success',
-          statusCode: 200,
+          statusCode: response.status,
           message: 'OK – Action permitted',
-          response: { success: true, data: 'Operation completed successfully' },
+          response: data,
+          authHeader,
+        });
+      } else if (response.status === 403) {
+        setResult({
+          status: 'forbidden',
+          statusCode: 403,
+          message: `Forbidden: missing required scope '${endpoint.requiredScope}'`,
+          response: data,
           authHeader,
         });
       } else {
@@ -67,6 +67,7 @@ export function EndpointCard({ endpoint }: EndpointCardProps) {
           status: 'error',
           statusCode: response.status,
           message: `Error: ${response.statusText}`,
+          response: data,
           authHeader,
         });
       }
@@ -204,7 +205,7 @@ export function EndpointCard({ endpoint }: EndpointCardProps) {
                           Response:
                         </p>
                         <pre className="text-xs text-slate-300 font-mono overflow-x-auto">
-                          {JSON.stringify(result.response, null, 2)}
+                          {JSON.stringify(result.response as object, null, 2)}
                         </pre>
                       </div>
                     )}
