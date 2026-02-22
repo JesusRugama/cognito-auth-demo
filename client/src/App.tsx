@@ -1,32 +1,38 @@
-import { useState } from 'react';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { Auth } from './pages/Auth';
 import { Dashboard } from './pages/Dashboard';
 import { ProtectedRoute } from './components/ProtectedRoute';
 
-function AppContent() {
-  const [currentRoute, setCurrentRoute] = useState<'auth' | 'dashboard'>('auth');
+function AppRoutes() {
   const { isAuthenticated } = useAuth();
 
-  const navigateToDashboard = () => setCurrentRoute('dashboard');
-  const navigateToAuth = () => setCurrentRoute('auth');
-
-  if (currentRoute === 'dashboard' && isAuthenticated) {
-    return (
-      <ProtectedRoute onRedirect={navigateToAuth}>
-        <Dashboard onLogout={navigateToAuth} />
-      </ProtectedRoute>
-    );
-  }
-
-  return <Auth onLoginSuccess={navigateToDashboard} />;
+  return (
+    <Routes>
+      <Route
+        path="/login"
+        element={isAuthenticated ? <Navigate to="/" replace /> : <Auth />}
+      />
+      <Route
+        path="/"
+        element={
+          <ProtectedRoute>
+            <Dashboard />
+          </ProtectedRoute>
+        }
+      />
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
+  );
 }
 
 function App() {
   return (
-    <AuthProvider>
-      <AppContent />
-    </AuthProvider>
+    <BrowserRouter>
+      <AuthProvider>
+        <AppRoutes />
+      </AuthProvider>
+    </BrowserRouter>
   );
 }
 

@@ -53,7 +53,7 @@ Users log in through a **custom login form** (no Hosted UI) using one of two Cog
 git clone https://github.com/JesusRugama/cognito-auth-demo.git
 cd cognito-auth-demo
 cd client && npm install
-cd ../server && npm install
+cd ../lambdas && npm install
 ```
 
 ### 2. Deploy Infrastructure
@@ -97,12 +97,15 @@ cognito-auth-demo/
 │   │   └── main.tsx           # Entry point
 │   ├── .env.example
 │   └── vite.config.ts
-├── server/                    # Lambda function handlers (Node.js)
+├── lambdas/                   # Lambda function handlers (Node.js)
 │   ├── src/
-│   │   ├── endpoint1–4/       # API endpoint handlers
-│   │   ├── authorizer/        # Lambda authorizer (JWT + groups check)
-│   │   ├── pre-auth/          # Pre-Authentication trigger
-│   │   └── shared/            # CORS headers, response helpers
+│   │   ├── api/               # API Gateway endpoint handlers
+│   │   │   ├── endpoint1–4/   # Individual endpoint handlers
+│   │   │   └── shared/        # CORS headers, response helpers
+│   │   └── cognito/           # Cognito User Pool triggers
+│   │       ├── authorizer/    # Lambda authorizer (JWT + groups check)
+│   │       ├── pre-auth/      # Pre-Authentication trigger
+│   │       └── post-confirmation/  # Group assignment on sign-up
 │   └── scripts/               # package.sh + deploy.sh
 ├── terraform/                 # IaC — all AWS resources
 │   ├── cognito.tf             # User Pool, Groups, App Clients

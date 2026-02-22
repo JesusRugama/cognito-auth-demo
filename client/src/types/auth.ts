@@ -1,3 +1,8 @@
+export enum AppClient {
+  Customer = 'customer',
+  Admin = 'admin',
+}
+
 export type UserRole = 'customer' | 'admin';
 
 export interface User {

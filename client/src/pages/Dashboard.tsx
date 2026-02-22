@@ -1,18 +1,16 @@
+import { useNavigate } from 'react-router-dom';
 import { LogOut, Shield } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { EndpointCard } from '../components/EndpointCard';
 import { API_ENDPOINTS } from '../types/endpoints';
 
-interface DashboardProps {
-  onLogout: () => void;
-}
-
-export function Dashboard({ onLogout }: DashboardProps) {
+export function Dashboard() {
   const { user, logout } = useAuth();
+  const navigate = useNavigate();
 
   const handleLogout = () => {
     logout();
-    onLogout();
+    navigate('/login');
   };
 
   return (

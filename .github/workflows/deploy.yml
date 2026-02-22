@@ -6,7 +6,7 @@ on:
       - main
     paths:
       - 'client/**'
-      - 'server/**'
+      - 'lambdas/**'
       - '.github/workflows/**'
   workflow_dispatch:
 
@@ -41,7 +41,7 @@ jobs:
           cache: 'npm'
           cache-dependency-path: |
             client/package-lock.json
-            server/package-lock.json
+            lambdas/package-lock.json
 
       - name: Install client dependencies
         working-directory: client
@@ -57,21 +57,21 @@ jobs:
         run: |
           aws s3 sync client/dist s3://${{ env.S3_BUCKET }}/website --delete
 
-      # ---- Server ----
-      - name: Install server dependencies
-        working-directory: server
+      # ---- Lambdas ----
+      - name: Install lambda dependencies
+        working-directory: lambdas
         run: npm ci
 
-      - name: Typecheck server
-        working-directory: server
+      - name: Typecheck lambda handlers
+        working-directory: lambdas
         run: npm run typecheck
 
       - name: Package Lambda zips
-        working-directory: server
+        working-directory: lambdas
         run: npm run package
 
       - name: Deploy Lambda zips to S3
-        working-directory: server
+        working-directory: lambdas
         run: npm run deploy
         env:
           S3_BUCKET: ${{ env.S3_BUCKET }}

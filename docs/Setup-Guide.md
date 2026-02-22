@@ -67,9 +67,9 @@ cloudfront_domain        = "d1234abcdef.cloudfront.net"
 ## 3. Build and Deploy Lambda Functions
 
 ```bash
-cd server
+cd lambdas
 npm install
-npm run package    # bundles each handler with esbuild → zips in server/zips/
+npm run package    # bundles each handler with esbuild → zips in lambdas/zips/
 S3_BUCKET=your-bucket npm run deploy   # uploads zips + updates Lambda function code
 ```
 

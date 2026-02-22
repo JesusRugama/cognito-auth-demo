@@ -69,7 +69,7 @@ resource "aws_cognito_user_pool_client" "admin" {
 #   handler       = "index.handler"
 
 #   s3_bucket = var.bucket_name
-#   s3_key    = "server/pre-auth.zip"
+#   s3_key    = "lambdas/pre-auth.zip"
 
 #   environment {
 #     variables = {
@@ -97,7 +97,7 @@ resource "aws_cognito_user_pool_client" "admin" {
 #   handler       = "index.handler"
 
 #   s3_bucket = var.bucket_name
-#   s3_key    = "server/authorizer.zip"
+#   s3_key    = "lambdas/authorizer.zip"
 
 #   environment {
 #     variables = {

@@ -37,7 +37,7 @@ resource "aws_lambda_function" "api" {
   handler       = "index.handler"
 
   s3_bucket = var.bucket_name
-  s3_key    = "server/${each.key}.zip"
+  s3_key    = "lambdas/${each.key}.zip"
 
   environment {
     variables = {

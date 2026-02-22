@@ -1,18 +1,17 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Shield, AlertCircle, CheckCircle, Users, UserCog } from 'lucide-react';
-import { useAuth, AppClient } from '../contexts/AuthContext';
+import { useAuth } from '../contexts/AuthContext';
+import { AppClient } from '../types/auth';
 import { LoginForm } from '../components/LoginForm';
 import { RegisterForm } from '../components/RegisterForm';
 
-interface AuthProps {
-  onLoginSuccess: () => void;
-}
-
 type Tab = 'login' | 'register';
 
-export function Auth({ onLoginSuccess }: AuthProps) {
+export function Auth() {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<Tab>('login');
-  const [appClient, setAppClient] = useState<AppClient>('customer');
+  const [appClient, setAppClient] = useState<AppClient>(AppClient.Customer);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
@@ -30,7 +29,7 @@ export function Auth({ onLoginSuccess }: AuthProps) {
     setLoading(true);
     try {
       await login(email, password, appClient);
-      onLoginSuccess();
+      navigate('/');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Login failed');
     } finally {
@@ -77,9 +76,9 @@ export function Auth({ onLoginSuccess }: AuthProps) {
             <div className="grid grid-cols-2 gap-3">
               <button
                 type="button"
-                onClick={() => setAppClient('customer')}
+                onClick={() => setAppClient(AppClient.Customer)}
                 className={`flex items-center gap-3 p-4 rounded-lg border-2 transition-all ${
-                  appClient === 'customer'
+                  appClient === AppClient.Customer
                     ? 'border-green-500 bg-green-500/10 text-green-300'
                     : 'border-slate-600 bg-slate-900/50 text-slate-400 hover:border-slate-500'
                 }`}
@@ -92,9 +91,9 @@ export function Auth({ onLoginSuccess }: AuthProps) {
               </button>
               <button
                 type="button"
-                onClick={() => setAppClient('admin')}
+                onClick={() => setAppClient(AppClient.Admin)}
                 className={`flex items-center gap-3 p-4 rounded-lg border-2 transition-all ${
-                  appClient === 'admin'
+                  appClient === AppClient.Admin
                     ? 'border-blue-500 bg-blue-500/10 text-blue-300'
                     : 'border-slate-600 bg-slate-900/50 text-slate-400 hover:border-slate-500'
                 }`}

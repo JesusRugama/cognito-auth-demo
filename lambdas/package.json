@@ -1,5 +1,5 @@
 {
-  "name": "cognito-auth-demo-server",
+  "name": "cognito-auth-demo-lambdas",
   "version": "1.0.0",
   "private": true,
   "scripts": {

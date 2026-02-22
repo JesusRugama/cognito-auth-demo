@@ -5,17 +5,15 @@ import {
   AuthenticationDetails,
   CognitoUserSession,
 } from 'amazon-cognito-identity-js';
-import { User, UserRole } from '../types/auth';
+import { AppClient, User, UserRole } from '../types/auth';
 
 const REGION = import.meta.env.VITE_AWS_REGION ?? 'us-east-1';
 const USER_POOL_ID = import.meta.env.VITE_COGNITO_USER_POOL_ID ?? '';
 const CUSTOMER_CLIENT_ID = import.meta.env.VITE_COGNITO_CUSTOMER_CLIENT_ID ?? '';
 const ADMIN_CLIENT_ID = import.meta.env.VITE_COGNITO_ADMIN_CLIENT_ID ?? '';
 
-export type AppClient = 'customer' | 'admin';
-
 function getClientId(appClient: AppClient): string {
-  return appClient === 'admin' ? ADMIN_CLIENT_ID : CUSTOMER_CLIENT_ID;
+  return appClient === AppClient.Admin ? ADMIN_CLIENT_ID : CUSTOMER_CLIENT_ID;
 }
 
 function getUserPool(appClient: AppClient): CognitoUserPool {
