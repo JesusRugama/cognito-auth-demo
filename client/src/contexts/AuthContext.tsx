@@ -43,6 +43,8 @@ interface AuthContextType {
   accessToken: string | null;
   isAuthenticated: boolean;
   login: (email: string, password: string, appClient: AppClient) => Promise<void>;
+  signUp: (email: string, password: string, appClient: AppClient) => Promise<void>;
+  confirmSignUp: (email: string, code: string, appClient: AppClient) => Promise<void>;
   logout: () => void;
 }
 
@@ -78,6 +80,33 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
   };
 
+  const signUp = (email: string, password: string, appClient: AppClient): Promise<void> => {
+    return new Promise((resolve, reject) => {
+      const pool = getUserPool(appClient);
+      pool.signUp(email, password, [], [], (err) => {
+        if (err) {
+          reject(new Error(err.message));
+        } else {
+          resolve();
+        }
+      });
+    });
+  };
+
+  const confirmSignUp = (email: string, code: string, appClient: AppClient): Promise<void> => {
+    return new Promise((resolve, reject) => {
+      const pool = getUserPool(appClient);
+      const cogUser = new CognitoUser({ Username: email, Pool: pool });
+      cogUser.confirmRegistration(code, true, (err) => {
+        if (err) {
+          reject(new Error(err.message));
+        } else {
+          resolve();
+        }
+      });
+    });
+  };
+
   const logout = () => {
     cognitoUser?.signOut();
     setUser(null);
@@ -86,7 +115,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, accessToken, isAuthenticated: !!user, login, logout }}>
+    <AuthContext.Provider value={{ user, accessToken, isAuthenticated: !!user, login, signUp, confirmSignUp, logout }}>
       {children}
     </AuthContext.Provider>
   );

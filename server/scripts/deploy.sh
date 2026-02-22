@@ -10,7 +10,7 @@ if [ -z "$S3_BUCKET" ]; then
 fi
 
 REGION="${AWS_REGION:-us-east-1}"
-HANDLERS="endpoint1 endpoint2 endpoint3 endpoint4 pre-auth authorizer"
+HANDLERS="endpoint1 endpoint2 endpoint3 endpoint4"
 
 echo "Deploying Lambda zips to s3://$S3_BUCKET/server/..."
 

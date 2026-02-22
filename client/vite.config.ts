@@ -13,7 +13,7 @@ export default defineConfig({
   server: {
     proxy: {
       '/endpoint': {
-        target: 'https://b5og4iojo5.execute-api.us-east-1.amazonaws.com/prod',
+        target: 'https://n2azfcvf05.execute-api.us-east-1.amazonaws.com/prod',
         changeOrigin: true,
       },
     },
