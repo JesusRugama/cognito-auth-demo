@@ -15,18 +15,11 @@ resource "aws_cognito_user_pool" "main" {
   }
 
   lambda_config {
-    post_confirmation = aws_lambda_function.post_confirmation.arn
     pre_authentication = aws_lambda_function.pre_auth.arn
   }
 }
 
 # ---- Groups ----
-
-resource "aws_cognito_user_group" "customer" {
-  name         = "customer"
-  user_pool_id = aws_cognito_user_pool.main.id
-  description  = "Customer role — read-only access"
-}
 
 resource "aws_cognito_user_group" "admin" {
   name         = "admin"
@@ -64,7 +57,7 @@ resource "aws_cognito_user_pool_client" "admin" {
 
 resource "aws_lambda_function" "pre_auth" {
   function_name = "demo-cognito-auth-pre-auth"
-  description   = "Blocks users from logging in through the wrong App Client"
+  description   = "Blocks non-admin users from signing into the admin app client"
   role          = aws_iam_role.lambda_exec.arn
   runtime       = "nodejs20.x"
   handler       = "index.handler"
@@ -74,8 +67,7 @@ resource "aws_lambda_function" "pre_auth" {
 
   environment {
     variables = {
-      CUSTOMER_CLIENT_ID = aws_cognito_user_pool_client.customer.id
-      ADMIN_CLIENT_ID    = aws_cognito_user_pool_client.admin.id
+      ADMIN_CLIENT_NAME = "admin-app"
     }
   }
 }
@@ -86,6 +78,25 @@ resource "aws_lambda_permission" "cognito_pre_auth" {
   function_name = aws_lambda_function.pre_auth.function_name
   principal     = "cognito-idp.amazonaws.com"
   source_arn    = aws_cognito_user_pool.main.arn
+}
+
+resource "aws_iam_role_policy" "pre_auth_cognito" {
+  name = "pre-auth-cognito-list-groups"
+  role = aws_iam_role.lambda_exec.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "cognito-idp:AdminListGroupsForUser",
+          "cognito-idp:ListUserPoolClients"
+        ]
+        Resource = aws_cognito_user_pool.main.arn
+      }
+    ]
+  })
 }
 
 # ---- Lambda Authorizer ----
@@ -115,20 +126,4 @@ resource "aws_lambda_permission" "authorizer_api_gateway" {
   function_name = aws_lambda_function.authorizer.function_name
   principal     = "apigateway.amazonaws.com"
   source_arn    = "${aws_api_gateway_rest_api.main.execution_arn}/*/*"
-}
-
-resource "aws_iam_role_policy" "pre_auth_cognito" {
-  name = "pre-auth-cognito-list-groups"
-  role = aws_iam_role.lambda_exec.id
-
-  policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Effect   = "Allow"
-        Action   = "cognito-idp:AdminListGroupsForUser"
-        Resource = aws_cognito_user_pool.main.arn
-      }
-    ]
-  })
 }

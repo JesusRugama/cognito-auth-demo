@@ -44,21 +44,21 @@ function decodeHeader(token: string): { kid: string } {
   return JSON.parse(Buffer.from(headerB64, 'base64url').toString()) as { kid: string };
 }
 
-const ENDPOINT_PERMISSIONS: Record<string, { allowedGroups: string[]; allowedClients: string[] }> = {
+const ENDPOINT_PERMISSIONS: Record<string, { requiredGroup: string | null; allowedClients: string[] }> = {
   '/endpoint1': {
-    allowedGroups: ['customer', 'admin'],
+    requiredGroup: null,
     allowedClients: [CUSTOMER_CLIENT_ID, ADMIN_CLIENT_ID],
   },
   '/endpoint2': {
-    allowedGroups: ['customer', 'admin'],
+    requiredGroup: null,
     allowedClients: [CUSTOMER_CLIENT_ID, ADMIN_CLIENT_ID],
   },
   '/endpoint3': {
-    allowedGroups: ['admin'],
+    requiredGroup: 'admin',
     allowedClients: [ADMIN_CLIENT_ID],
   },
   '/endpoint4': {
-    allowedGroups: ['admin'],
+    requiredGroup: 'admin',
     allowedClients: [ADMIN_CLIENT_ID],
   },
 };
@@ -105,7 +105,7 @@ export const handler = async (
     const permissions = ENDPOINT_PERMISSIONS[endpointPath];
     if (!permissions) return buildPolicy(sub, 'Deny', resource);
 
-    const groupAllowed = groups.some((g) => permissions.allowedGroups.includes(g));
+    const groupAllowed = permissions.requiredGroup === null || groups.includes(permissions.requiredGroup);
     const clientAllowed = permissions.allowedClients.includes(clientId);
 
     if (groupAllowed && clientAllowed) {

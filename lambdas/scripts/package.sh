@@ -7,7 +7,7 @@ ZIPS="$ROOT/zips"
 mkdir -p "$ZIPS"
 
 API_HANDLERS="endpoint1 endpoint2 endpoint3 endpoint4"
-COGNITO_HANDLERS="pre-auth authorizer post-confirmation"
+COGNITO_HANDLERS="pre-auth authorizer"
 
 echo "Bundling and packaging Lambda handlers..."
 

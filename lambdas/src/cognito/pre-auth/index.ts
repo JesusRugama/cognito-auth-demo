@@ -2,31 +2,49 @@ import { PreAuthenticationTriggerHandler } from 'aws-lambda';
 import {
   CognitoIdentityProviderClient,
   AdminListGroupsForUserCommand,
+  ListUserPoolClientsCommand,
 } from '@aws-sdk/client-cognito-identity-provider';
 
 const cognito = new CognitoIdentityProviderClient({});
-const CUSTOMER_CLIENT_ID = process.env.CUSTOMER_CLIENT_ID!;
-const ADMIN_CLIENT_ID = process.env.ADMIN_CLIENT_ID!;
+const ADMIN_CLIENT_NAME = process.env.ADMIN_CLIENT_NAME!;
+
+let cachedAdminClientId: string | null = null;
+
+async function getAdminClientId(userPoolId: string): Promise<string> {
+  if (cachedAdminClientId) return cachedAdminClientId;
+
+  const { UserPoolClients = [] } = await cognito.send(
+    new ListUserPoolClientsCommand({ UserPoolId: userPoolId })
+  );
+
+  const adminClient = UserPoolClients.find((c) => c.ClientName === ADMIN_CLIENT_NAME);
+  if (!adminClient?.ClientId) {
+    throw new Error(`Client "${ADMIN_CLIENT_NAME}" not found in pool`);
+  }
+
+  cachedAdminClientId = adminClient.ClientId;
+  return cachedAdminClientId;
+}
 
 export const handler: PreAuthenticationTriggerHandler = async (event) => {
   const clientId = event.callerContext.clientId;
-  const username = event.userName;
-  const userPoolId = event.userPoolId;
+  const adminClientId = await getAdminClientId(event.userPoolId);
 
-  const { Groups = [] } = await cognito.send(
-    new AdminListGroupsForUserCommand({ Username: username, UserPoolId: userPoolId })
-  );
-
-  const groupNames = Groups.map((g: { GroupName?: string }) => g.GroupName ?? '');
-  const isAdmin = groupNames.includes('admin');
-
-  if (clientId === ADMIN_CLIENT_ID && !isAdmin) {
-    throw new Error('Only admin users can access the admin app.');
+  if (clientId !== adminClientId) {
+    return event;
   }
 
-  const isCustomer = groupNames.includes('customer');
-  if (clientId === CUSTOMER_CLIENT_ID && !isCustomer && !isAdmin) {
-    throw new Error('User is not assigned to any valid group.');
+  const { Groups = [] } = await cognito.send(
+    new AdminListGroupsForUserCommand({
+      Username: event.userName,
+      UserPoolId: event.userPoolId,
+    })
+  );
+
+  const isAdmin = Groups.some((g) => g.GroupName === 'admin');
+
+  if (!isAdmin) {
+    throw new Error('Only admin users can access the admin app.');
   }
 
   return event;
