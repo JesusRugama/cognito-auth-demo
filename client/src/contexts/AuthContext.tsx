@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import {
   CognitoUserPool,
   CognitoUser,
@@ -36,10 +36,13 @@ function groupsToRole(groups: string[]): UserRole {
   return groups.includes('admin') ? 'admin' : 'customer';
 }
 
+const APP_CLIENT_KEY = 'cognito_app_client';
+
 interface AuthContextType {
   user: User | null;
   accessToken: string | null;
   isAuthenticated: boolean;
+  loading: boolean;
   login: (email: string, password: string, appClient: AppClient) => Promise<void>;
   signUp: (email: string, password: string, appClient: AppClient) => Promise<void>;
   confirmSignUp: (email: string, code: string, appClient: AppClient) => Promise<void>;
@@ -52,6 +55,34 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [accessToken, setAccessToken] = useState<string | null>(null);
   const [cognitoUser, setCognitoUser] = useState<CognitoUser | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const stored = localStorage.getItem(APP_CLIENT_KEY) as AppClient | null;
+    if (!stored) {
+      setLoading(false);
+      return;
+    }
+
+    const pool = getUserPool(stored);
+    const currentUser = pool.getCurrentUser();
+    if (!currentUser) {
+      setLoading(false);
+      return;
+    }
+
+    currentUser.getSession((err: Error | null, session: CognitoUserSession | null) => {
+      if (!err && session?.isValid()) {
+        const groups = decodeGroups(session);
+        const role = groupsToRole(groups);
+        const email = session.getIdToken().decodePayload()['email'] as string;
+        setUser({ email, role, groups });
+        setAccessToken(session.getAccessToken().getJwtToken());
+        setCognitoUser(currentUser);
+      }
+      setLoading(false);
+    });
+  }, []);
 
   const login = (email: string, password: string, appClient: AppClient): Promise<void> => {
     return new Promise((resolve, reject) => {
@@ -61,6 +92,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       cogUser.authenticateUser(authDetails, {
         onSuccess(session) {
+          localStorage.setItem(APP_CLIENT_KEY, appClient);
           const groups = decodeGroups(session);
           const role = groupsToRole(groups);
           setUser({ email, role, groups });
@@ -107,13 +139,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = () => {
     cognitoUser?.signOut();
+    localStorage.removeItem(APP_CLIENT_KEY);
     setUser(null);
     setAccessToken(null);
     setCognitoUser(null);
   };
 
   return (
-    <AuthContext.Provider value={{ user, accessToken, isAuthenticated: !!user, login, signUp, confirmSignUp, logout }}>
+    <AuthContext.Provider value={{ user, accessToken, isAuthenticated: !!user, loading, login, signUp, confirmSignUp, logout }}>
       {children}
     </AuthContext.Provider>
   );

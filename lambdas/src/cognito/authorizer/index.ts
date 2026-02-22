@@ -50,7 +50,7 @@ const ENDPOINT_PERMISSIONS: Record<string, { allowedGroups: string[]; allowedCli
     allowedClients: [CUSTOMER_CLIENT_ID, ADMIN_CLIENT_ID],
   },
   '/endpoint2': {
-    allowedGroups: ['viewer', 'admin'],
+    allowedGroups: ['customer', 'admin'],
     allowedClients: [CUSTOMER_CLIENT_ID, ADMIN_CLIENT_ID],
   },
   '/endpoint3': {

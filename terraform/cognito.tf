@@ -14,9 +14,10 @@ resource "aws_cognito_user_pool" "main" {
     require_symbols   = false
   }
 
-  # lambda_config {
-  #   pre_authentication = aws_lambda_function.pre_auth.arn
-  # }
+  lambda_config {
+    post_confirmation = aws_lambda_function.post_confirmation.arn
+    pre_authentication = aws_lambda_function.pre_auth.arn
+  }
 }
 
 # ---- Groups ----
@@ -61,73 +62,73 @@ resource "aws_cognito_user_pool_client" "admin" {
 
 # ---- Pre-Authentication Lambda ----
 
-# resource "aws_lambda_function" "pre_auth" {
-#   function_name = "demo-cognito-auth-pre-auth"
-#   description   = "Blocks users from logging in through the wrong App Client"
-#   role          = aws_iam_role.lambda_exec.arn
-#   runtime       = "nodejs20.x"
-#   handler       = "index.handler"
+resource "aws_lambda_function" "pre_auth" {
+  function_name = "demo-cognito-auth-pre-auth"
+  description   = "Blocks users from logging in through the wrong App Client"
+  role          = aws_iam_role.lambda_exec.arn
+  runtime       = "nodejs20.x"
+  handler       = "index.handler"
 
-#   s3_bucket = var.bucket_name
-#   s3_key    = "lambdas/pre-auth.zip"
+  s3_bucket = var.bucket_name
+  s3_key    = "lambdas/pre-auth.zip"
 
-#   environment {
-#     variables = {
-#       CUSTOMER_CLIENT_ID = aws_cognito_user_pool_client.customer.id
-#       ADMIN_CLIENT_ID    = aws_cognito_user_pool_client.admin.id
-#     }
-#   }
-# }
+  environment {
+    variables = {
+      CUSTOMER_CLIENT_ID = aws_cognito_user_pool_client.customer.id
+      ADMIN_CLIENT_ID    = aws_cognito_user_pool_client.admin.id
+    }
+  }
+}
 
-# resource "aws_lambda_permission" "cognito_pre_auth" {
-#   statement_id  = "AllowCognitoInvokePreAuth"
-#   action        = "lambda:InvokeFunction"
-#   function_name = aws_lambda_function.pre_auth.function_name
-#   principal     = "cognito-idp.amazonaws.com"
-#   source_arn    = aws_cognito_user_pool.main.arn
-# }
+resource "aws_lambda_permission" "cognito_pre_auth" {
+  statement_id  = "AllowCognitoInvokePreAuth"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.pre_auth.function_name
+  principal     = "cognito-idp.amazonaws.com"
+  source_arn    = aws_cognito_user_pool.main.arn
+}
 
 # ---- Lambda Authorizer ----
 
-# resource "aws_lambda_function" "authorizer" {
-#   function_name = "demo-cognito-auth-authorizer"
-#   description   = "API Gateway Lambda authorizer — checks cognito:groups and client_id"
-#   role          = aws_iam_role.lambda_exec.arn
-#   runtime       = "nodejs20.x"
-#   handler       = "index.handler"
+resource "aws_lambda_function" "authorizer" {
+  function_name = "demo-cognito-auth-authorizer"
+  description   = "API Gateway Lambda authorizer — checks cognito:groups and client_id"
+  role          = aws_iam_role.lambda_exec.arn
+  runtime       = "nodejs20.x"
+  handler       = "index.handler"
 
-#   s3_bucket = var.bucket_name
-#   s3_key    = "lambdas/authorizer.zip"
+  s3_bucket = var.bucket_name
+  s3_key    = "lambdas/authorizer.zip"
 
-#   environment {
-#     variables = {
-#       USER_POOL_ID       = aws_cognito_user_pool.main.id
-#       CUSTOMER_CLIENT_ID = aws_cognito_user_pool_client.customer.id
-#       ADMIN_CLIENT_ID    = aws_cognito_user_pool_client.admin.id
-#     }
-#   }
-# }
+  environment {
+    variables = {
+      USER_POOL_ID       = aws_cognito_user_pool.main.id
+      CUSTOMER_CLIENT_ID = aws_cognito_user_pool_client.customer.id
+      ADMIN_CLIENT_ID    = aws_cognito_user_pool_client.admin.id
+    }
+  }
+}
 
-# resource "aws_lambda_permission" "authorizer_api_gateway" {
-#   statement_id  = "AllowAPIGatewayInvokeAuthorizer"
-#   action        = "lambda:InvokeFunction"
-#   function_name = aws_lambda_function.authorizer.function_name
-#   principal     = "apigateway.amazonaws.com"
-#   source_arn    = "${aws_api_gateway_rest_api.main.execution_arn}/*/*"
-# }
+resource "aws_lambda_permission" "authorizer_api_gateway" {
+  statement_id  = "AllowAPIGatewayInvokeAuthorizer"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.authorizer.function_name
+  principal     = "apigateway.amazonaws.com"
+  source_arn    = "${aws_api_gateway_rest_api.main.execution_arn}/*/*"
+}
 
-# resource "aws_iam_role_policy" "pre_auth_cognito" {
-#   name = "pre-auth-cognito-list-groups"
-#   role = aws_iam_role.lambda_exec.id
+resource "aws_iam_role_policy" "pre_auth_cognito" {
+  name = "pre-auth-cognito-list-groups"
+  role = aws_iam_role.lambda_exec.id
 
-#   policy = jsonencode({
-#     Version = "2012-10-17"
-#     Statement = [
-#       {
-#         Effect   = "Allow"
-#         Action   = "cognito-idp:AdminListGroupsForUser"
-#         Resource = aws_cognito_user_pool.main.arn
-#       }
-#     ]
-#   })
-# }
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect   = "Allow"
+        Action   = "cognito-idp:AdminListGroupsForUser"
+        Resource = aws_cognito_user_pool.main.arn
+      }
+    ]
+  })
+}
