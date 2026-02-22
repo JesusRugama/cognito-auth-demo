@@ -51,7 +51,11 @@ jobs:
         working-directory: client
         run: npm run build
         env:
+          VITE_AWS_REGION: us-east-1
           VITE_API_BASE_URL: ${{ env.VITE_API_BASE_URL }}
+          VITE_COGNITO_USER_POOL_ID: us-east-1_gSYHYMjke
+          VITE_COGNITO_CUSTOMER_CLIENT_ID: 34j4nbjriausi8aogll05dqr44
+          VITE_COGNITO_ADMIN_CLIENT_ID: 6p7ceuursrprnp62r7go84dl5m
 
       - name: Deploy client to S3
         run: |

@@ -53,10 +53,12 @@ export function Dashboard() {
             Welcome to the Cognito Auth Demo
           </h2>
           <p className="text-slate-300 leading-relaxed max-w-3xl">
-            This demo shows how Cognito groups and app clients control access to API endpoints.
-            Log in as a <span className="font-semibold text-blue-400">Customer</span>{' '}
-            or <span className="font-semibold text-blue-400">Admin</span> to see which endpoints
-            are allowed based on your group.
+            This demo shows how Cognito <span className="font-semibold text-blue-400">groups</span> and{' '}
+            <span className="font-semibold text-blue-400">app clients</span> control access to API
+            endpoints. Any authenticated user can access customer endpoints (1 & 2). Only users in
+            the <span className="font-semibold text-purple-400">admin</span> group, signed in through
+            the admin client, can access admin endpoints (3 & 4). A Lambda authorizer checks both
+            your group and client on every request.
           </p>
         </section>
 

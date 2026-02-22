@@ -30,14 +30,14 @@ resource "aws_api_gateway_resource" "endpoint" {
 
 # ---- Lambda Authorizer ----
 
-# resource "aws_api_gateway_authorizer" "lambda" {
-#   name                             = "lambda-authorizer"
-#   rest_api_id                      = aws_api_gateway_rest_api.main.id
-#   authorizer_uri                   = aws_lambda_function.authorizer.invoke_arn
-#   authorizer_result_ttl_in_seconds = 0
-#   type                             = "TOKEN"
-#   identity_source                  = "method.request.header.Authorization"
-# }
+resource "aws_api_gateway_authorizer" "lambda" {
+  name                             = "lambda-authorizer"
+  rest_api_id                      = aws_api_gateway_rest_api.main.id
+  authorizer_uri                   = aws_lambda_function.authorizer.invoke_arn
+  authorizer_result_ttl_in_seconds = 0
+  type                             = "TOKEN"
+  identity_source                  = "method.request.header.Authorization"
+}
 
 # ---- Methods ----
 
@@ -47,9 +47,8 @@ resource "aws_api_gateway_method" "endpoint" {
   rest_api_id   = aws_api_gateway_rest_api.main.id
   resource_id   = aws_api_gateway_resource.endpoint[each.key].id
   http_method   = each.value.method
-  authorization = "NONE"
-  # authorization = "CUSTOM"
-  # authorizer_id = aws_api_gateway_authorizer.lambda.id
+  authorization = "CUSTOM"
+  authorizer_id = aws_api_gateway_authorizer.lambda.id
 }
 
 # ---- OPTIONS methods (CORS preflight) ----
@@ -146,7 +145,7 @@ resource "aws_api_gateway_deployment" "main" {
       aws_api_gateway_resource.endpoint,
       aws_api_gateway_method.endpoint,
       aws_api_gateway_integration.endpoint,
-      # aws_api_gateway_authorizer.lambda,
+      aws_api_gateway_authorizer.lambda,
       aws_api_gateway_method.options,
       aws_api_gateway_integration.options,
       aws_api_gateway_integration_response.options,

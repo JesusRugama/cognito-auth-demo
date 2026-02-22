@@ -159,7 +159,12 @@ export function Auth() {
           </div>
         </div>
 
-        <p className="text-center text-sm text-slate-500 mt-6">
+        <div className="mt-6 p-4 bg-slate-800 border border-slate-700 rounded-lg text-sm">
+          <p className="text-slate-400 font-semibold mb-2">Demo Admin Credentials</p>
+          <p className="text-slate-300 font-mono">admin@demo.com / P@ssw0rd</p>
+        </div>
+
+        <p className="text-center text-sm text-slate-500 mt-4">
           Powered by Amazon Cognito
         </p>
       </div>
