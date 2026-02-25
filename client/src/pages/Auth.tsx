@@ -134,7 +134,7 @@ export function Auth() {
         <div className="mt-6 p-4 rounded-lg text-sm bg-theme-bg-card border border-theme-border space-y-1">
           <p className="font-semibold mb-2 text-theme-text-secondary">Demo Credentials</p>
           <p className="text-theme-text-primary">
-            <span className="text-theme-text-muted">Customer site:</span>{' '}
+            <span className="text-theme-text-muted">Public site:</span>{' '}
             <span className="font-mono">customer@demo.com / P@ssw0rd</span>
           </p>
           <p className="text-theme-text-primary">
@@ -142,7 +142,7 @@ export function Auth() {
             <span className="font-mono">admin@demo.com / P@ssw0rd</span>
           </p>
           <p className="text-theme-text-muted text-xs mt-2">
-            Admin users can also log into the customer site (same user pool).
+            Admin users can also log into the public site (same user pool).
           </p>
         </div>
 
