@@ -43,17 +43,24 @@ export function EndpointCard({ endpoint }: EndpointCardProps) {
         },
       });
 
-      const data = await response.json();
+      const statusCode = response.status;
+      let data: Record<string, unknown> | undefined;
+
+      try {
+        data = await response.json();
+      } catch {
+        // Response might not be JSON (e.g., API Gateway error pages)
+      }
 
       if (response.ok) {
         setResult({
           status: 'success',
-          statusCode: response.status,
+          statusCode,
           message: 'OK – Action permitted',
           response: data,
           authHeader,
         });
-      } else if (response.status === 403) {
+      } else if (statusCode === 401 || statusCode === 403) {
         setResult({
           status: 'forbidden',
           statusCode: 403,
@@ -64,7 +71,7 @@ export function EndpointCard({ endpoint }: EndpointCardProps) {
       } else {
         setResult({
           status: 'error',
-          statusCode: response.status,
+          statusCode,
           message: `Error: ${response.statusText}`,
           response: data,
           authHeader,
