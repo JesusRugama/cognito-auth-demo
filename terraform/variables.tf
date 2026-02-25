@@ -15,3 +15,9 @@ variable "bucket_name" {
   type        = string
   default     = "jesusrugama.demos.cognito-auth"
 }
+
+variable "admin_domain_name" {
+  description = "The admin domain name for the website"
+  type        = string
+  default     = "admin.cognito-auth.demos.jesusrugama.com"
+}

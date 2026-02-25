@@ -4,7 +4,14 @@ import { useAuth } from '../contexts/AuthContext';
 import { EndpointCard } from '../components/EndpointCard';
 import { API_ENDPOINTS } from '../types/endpoints';
 
+const isAdminMode = () => {
+  const hostname = window.location.hostname;
+  const envIsAdmin = import.meta.env.VITE_IS_ADMIN === 'true';
+  return hostname.startsWith('admin.') || envIsAdmin;
+};
+
 export function Dashboard() {
+  const isAdmin = isAdminMode();
   const { user, logout } = useAuth();
   const navigate = useNavigate();
 
@@ -23,7 +30,7 @@ export function Dashboard() {
                 <Shield className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h1 className="text-xl font-bold text-white">Cognito Auth Demo</h1>
+                <h1 className="text-xl font-bold text-white">Cognito Auth Demo{isAdmin && ': Admin'}</h1>
                 <p className="text-xs text-slate-400">Groups-based Authorization</p>
               </div>
             </div>

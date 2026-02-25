@@ -10,7 +10,7 @@ resource "aws_cloudfront_distribution" "main" {
   enabled             = true
   is_ipv6_enabled     = true
   default_root_object = "index.html"
-  aliases             = [var.domain_name]
+  aliases             = [var.domain_name, var.admin_domain_name]
   price_class         = "PriceClass_100"
 
   origin {
@@ -51,6 +51,18 @@ resource "aws_cloudfront_distribution" "main" {
 resource "aws_route53_record" "main" {
   zone_id = data.aws_route53_zone.main.zone_id
   name    = var.domain_name
+  type    = "A"
+
+  alias {
+    name                   = aws_cloudfront_distribution.main.domain_name
+    zone_id                = aws_cloudfront_distribution.main.hosted_zone_id
+    evaluate_target_health = false
+  }
+}
+
+resource "aws_route53_record" "admin" {
+  zone_id = data.aws_route53_zone.main.zone_id
+  name    = var.admin_domain_name
   type    = "A"
 
   alias {
