@@ -83,8 +83,8 @@ export function Auth() {
               onClick={() => switchTab('login')}
               className={`flex-1 py-4 px-6 font-semibold transition-colors ${
                 activeTab === 'login'
-                  ? 'bg-theme-bg-card-alt text-blue-500 border-b-2 border-blue-500'
-                  : 'text-theme-text-secondary hover:text-theme-text-primary'
+                  ? 'text-blue-500 border-b-2 border-blue-500'
+                  : 'bg-theme-bg-card-alt text-theme-text-secondary hover:text-theme-text-primary'
               }`}
             >
               Login
@@ -94,8 +94,8 @@ export function Auth() {
                 onClick={() => switchTab('register')}
                 className={`flex-1 py-4 px-6 font-semibold transition-colors ${
                   activeTab === 'register'
-                    ? 'bg-theme-bg-card-alt text-blue-500 border-b-2 border-blue-500'
-                    : 'text-theme-text-secondary hover:text-theme-text-primary'
+                    ? 'text-blue-500 border-b-2 border-blue-500'
+                    : 'bg-theme-bg-card-alt  text-theme-text-secondary hover:text-theme-text-primary'
                 }`}
               >
                 Register
