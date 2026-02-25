@@ -64,27 +64,27 @@ export function Auth() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-theme-bg-page flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-600 rounded-xl mb-4 shadow-lg shadow-blue-600/50">
             <Shield className="w-8 h-8 text-white" />
           </div>
-          <h1 className="text-3xl font-bold text-white mb-2">
+          <h1 className="text-3xl font-bold mb-2 text-theme-text-primary">
             Cognito Auth Demo{isAdmin && ': Admin'}
           </h1>
-          <p className="text-slate-400">Groups-based Authorization</p>
+          <p className="text-theme-text-secondary">Groups-based Authorization</p>
         </div>
 
-        <div className="bg-slate-800 rounded-xl shadow-2xl border border-slate-700 overflow-hidden">
+        <div className="rounded-xl shadow-2xl overflow-hidden bg-theme-bg-card border border-theme-border">
           {/* Tabs */}
-          <div className="flex border-b border-slate-700">
+          <div className="flex border-b border-theme-border">
             <button
               onClick={() => switchTab('login')}
               className={`flex-1 py-4 px-6 font-semibold transition-colors ${
                 activeTab === 'login'
-                  ? 'bg-slate-900 text-blue-400 border-b-2 border-blue-400'
-                  : 'text-slate-400 hover:text-slate-300'
+                  ? 'bg-theme-bg-card-alt text-blue-500 border-b-2 border-blue-500'
+                  : 'text-theme-text-secondary hover:text-theme-text-primary'
               }`}
             >
               Login
@@ -94,8 +94,8 @@ export function Auth() {
                 onClick={() => switchTab('register')}
                 className={`flex-1 py-4 px-6 font-semibold transition-colors ${
                   activeTab === 'register'
-                    ? 'bg-slate-900 text-blue-400 border-b-2 border-blue-400'
-                    : 'text-slate-400 hover:text-slate-300'
+                    ? 'bg-theme-bg-card-alt text-blue-500 border-b-2 border-blue-500'
+                    : 'text-theme-text-secondary hover:text-theme-text-primary'
                 }`}
               >
                 Register
@@ -105,16 +105,16 @@ export function Auth() {
 
           <div className="p-6">
             {error && (
-              <div className="mb-5 p-4 bg-red-900/30 border border-red-600/50 rounded-lg flex items-start gap-3">
-                <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
-                <p className="text-sm text-red-300">{error}</p>
+              <div className="mb-5 p-4 rounded-lg flex items-start gap-3 bg-red-500/10 border border-red-500/30">
+                <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5 text-red-500" />
+                <p className="text-sm text-red-500">{error}</p>
               </div>
             )}
 
             {success && (
-              <div className="mb-5 p-4 bg-green-900/30 border border-green-600/50 rounded-lg flex items-start gap-3">
-                <CheckCircle className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
-                <p className="text-sm text-green-300">{success}</p>
+              <div className="mb-5 p-4 rounded-lg flex items-start gap-3 bg-green-500/10 border border-green-500/30">
+                <CheckCircle className="w-5 h-5 flex-shrink-0 mt-0.5 text-green-500" />
+                <p className="text-sm text-green-500">{success}</p>
               </div>
             )}
 
@@ -131,12 +131,12 @@ export function Auth() {
           </div>
         </div>
 
-        <div className="mt-6 p-4 bg-slate-800 border border-slate-700 rounded-lg text-sm">
-          <p className="text-slate-400 font-semibold mb-2">Demo Admin Credentials</p>
-          <p className="text-slate-300 font-mono">admin@demo.com / P@ssw0rd</p>
+        <div className="mt-6 p-4 rounded-lg text-sm bg-theme-bg-card border border-theme-border">
+          <p className="font-semibold mb-2 text-theme-text-secondary">Demo Admin Credentials</p>
+          <p className="font-mono text-theme-text-primary">admin@demo.com / P@ssw0rd</p>
         </div>
 
-        <p className="text-center text-sm text-slate-500 mt-4">
+        <p className="text-center text-sm mt-4 text-theme-text-muted">
           Powered by Amazon Cognito
         </p>
       </div>

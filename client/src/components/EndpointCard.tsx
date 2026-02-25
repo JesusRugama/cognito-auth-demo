@@ -16,15 +16,15 @@ export function EndpointCard({ endpoint }: EndpointCardProps) {
   const getMethodColor = (method: string) => {
     switch (method) {
       case 'GET':
-        return 'bg-green-500/10 text-green-400 border-green-500/30';
+        return 'bg-green-500/10 text-green-500 border-green-500/30';
       case 'POST':
-        return 'bg-blue-500/10 text-blue-400 border-blue-500/30';
+        return 'bg-blue-500/10 text-blue-500 border-blue-500/30';
       case 'PUT':
-        return 'bg-yellow-500/10 text-yellow-400 border-yellow-500/30';
+        return 'bg-yellow-500/10 text-yellow-500 border-yellow-500/30';
       case 'DELETE':
-        return 'bg-red-500/10 text-red-400 border-red-500/30';
+        return 'bg-red-500/10 text-red-500 border-red-500/30';
       default:
-        return 'bg-slate-500/10 text-slate-400 border-slate-500/30';
+        return 'bg-gray-500/10 text-gray-500 border-gray-500/30';
     }
   };
 
@@ -84,7 +84,7 @@ export function EndpointCard({ endpoint }: EndpointCardProps) {
   };
 
   return (
-    <div className="bg-slate-800 border border-slate-700 rounded-lg p-6 hover:border-slate-600 transition-all">
+    <div className="bg-theme-bg-card-alt border border-theme-border rounded-lg p-6 hover:opacity-90 transition-all">
       <div className="flex items-start justify-between mb-4">
         <div className="flex-1">
           <div className="flex items-center gap-3 mb-2">
@@ -95,12 +95,12 @@ export function EndpointCard({ endpoint }: EndpointCardProps) {
             >
               {endpoint.method}
             </span>
-            <code className="text-slate-300 text-sm font-mono">{endpoint.path}</code>
+            <code className="text-theme-text-secondary text-sm font-mono">{endpoint.path}</code>
           </div>
-          <p className="text-slate-400 text-sm mb-2">{endpoint.description}</p>
+          <p className="text-theme-text-muted text-sm mb-2">{endpoint.description}</p>
           <div className="flex items-center gap-2">
-            <span className="text-xs text-slate-500">Required group:</span>
-            <span className="text-xs font-mono bg-slate-900 px-2 py-1 rounded text-purple-400 border border-slate-700">
+            <span className="text-xs text-theme-text-muted">Required group:</span>
+            <span className="text-xs font-mono bg-theme-bg-card px-2 py-1 rounded text-purple-500 border border-theme-border">
               {endpoint.requiredGroup}
             </span>
           </div>
@@ -109,7 +109,7 @@ export function EndpointCard({ endpoint }: EndpointCardProps) {
         <button
           onClick={testEndpoint}
           disabled={loading}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-700 text-white rounded-lg transition-colors font-medium text-sm shadow-lg disabled:cursor-not-allowed"
+          className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white rounded-lg transition-colors font-medium text-sm shadow-lg disabled:cursor-not-allowed"
         >
           {loading ? (
             <>
@@ -126,44 +126,44 @@ export function EndpointCard({ endpoint }: EndpointCardProps) {
       </div>
 
       {result && (
-        <div className="mt-4 pt-4 border-t border-slate-700">
+        <div className="mt-4 pt-4 border-t border-theme-border">
           <div
             className={`p-4 rounded-lg border-2 ${
               result.status === 'success'
-                ? 'bg-green-900/20 border-green-600/50'
+                ? 'bg-green-500/10 border-green-500/50'
                 : result.status === 'forbidden'
-                ? 'bg-red-900/20 border-red-600/50'
-                : 'bg-orange-900/20 border-orange-600/50'
+                ? 'bg-red-500/10 border-red-500/50'
+                : 'bg-orange-500/10 border-orange-500/50'
             }`}
           >
             <div className="flex items-start gap-3">
               {result.status === 'success' ? (
-                <CheckCircle className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
+                <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
               ) : result.status === 'forbidden' ? (
-                <XCircle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
+                <XCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
               ) : (
-                <AlertTriangle className="w-5 h-5 text-orange-400 flex-shrink-0 mt-0.5" />
+                <AlertTriangle className="w-5 h-5 text-orange-500 flex-shrink-0 mt-0.5" />
               )}
               <div className="flex-1">
                 <div className="flex items-center justify-between mb-2">
                   <span
                     className={`font-semibold ${
                       result.status === 'success'
-                        ? 'text-green-300'
+                        ? 'text-green-500'
                         : result.status === 'forbidden'
-                        ? 'text-red-300'
-                        : 'text-orange-300'
+                        ? 'text-red-500'
+                        : 'text-orange-500'
                     }`}
                   >
                     {result.status === 'success'
-                      ? 'Allowed ✓'
+                      ? 'Allowed'
                       : result.status === 'forbidden'
-                      ? 'Access Denied ✗'
+                      ? 'Access Denied'
                       : `Error ${result.statusCode}`}
                   </span>
                   <button
                     onClick={() => setShowDetails(!showDetails)}
-                    className="text-xs text-slate-400 hover:text-slate-300 flex items-center gap-1"
+                    className="text-xs text-theme-text-muted hover:text-theme-text-secondary flex items-center gap-1"
                   >
                     {showDetails ? (
                       <>
@@ -179,10 +179,10 @@ export function EndpointCard({ endpoint }: EndpointCardProps) {
                 <p
                   className={`text-sm ${
                     result.status === 'success'
-                      ? 'text-green-200'
+                      ? 'text-green-600'
                       : result.status === 'forbidden'
-                      ? 'text-red-200'
-                      : 'text-orange-200'
+                      ? 'text-red-600'
+                      : 'text-orange-600'
                   }`}
                 >
                   {result.message}
@@ -190,20 +190,20 @@ export function EndpointCard({ endpoint }: EndpointCardProps) {
 
                 {showDetails && (
                   <div className="mt-4 space-y-3">
-                    <div className="bg-slate-900/50 rounded p-3 border border-slate-700">
-                      <p className="text-xs text-slate-400 mb-1 font-semibold">
+                    <div className="bg-theme-bg-card rounded p-3 border border-theme-border">
+                      <p className="text-xs text-theme-text-muted mb-1 font-semibold">
                         Authorization Header:
                       </p>
-                      <code className="text-xs text-slate-300 font-mono break-all">
+                      <code className="text-xs text-theme-text-secondary font-mono break-all">
                         {result.authHeader}
                       </code>
                     </div>
                     {result.response && (
-                      <div className="bg-slate-900/50 rounded p-3 border border-slate-700">
-                        <p className="text-xs text-slate-400 mb-1 font-semibold">
+                      <div className="bg-theme-bg-card rounded p-3 border border-theme-border">
+                        <p className="text-xs text-theme-text-muted mb-1 font-semibold">
                           Response:
                         </p>
-                        <pre className="text-xs text-slate-300 font-mono overflow-x-auto">
+                        <pre className="text-xs text-theme-text-secondary font-mono overflow-x-auto">
                           {JSON.stringify(result.response as object, null, 2)}
                         </pre>
                       </div>

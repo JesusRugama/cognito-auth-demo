@@ -18,34 +18,34 @@ export function LoginForm({ loading, onSubmit }: LoginFormProps) {
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
       <div>
-        <label className="block text-sm font-medium text-slate-300 mb-2">
+        <label className="block text-sm font-medium text-theme-text-secondary mb-2">
           Email Address
         </label>
         <div className="relative">
-          <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+          <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-theme-text-muted" />
           <input
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             disabled={loading}
-            className="w-full pl-11 pr-4 py-3 bg-slate-900 border border-slate-600 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all disabled:opacity-50"
+            className="w-full pl-11 pr-4 py-3 bg-theme-input-bg border border-theme-input-border rounded-lg text-theme-input-text placeholder-theme-text-muted focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all disabled:opacity-50"
             placeholder="you@example.com"
           />
         </div>
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-slate-300 mb-2">
+        <label className="block text-sm font-medium text-theme-text-secondary mb-2">
           Password
         </label>
         <div className="relative">
-          <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+          <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-theme-text-muted" />
           <input
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             disabled={loading}
-            className="w-full pl-11 pr-4 py-3 bg-slate-900 border border-slate-600 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all disabled:opacity-50"
+            className="w-full pl-11 pr-4 py-3 bg-theme-input-bg border border-theme-input-border rounded-lg text-theme-input-text placeholder-theme-text-muted focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all disabled:opacity-50"
             placeholder="Enter your password"
           />
         </div>
@@ -54,7 +54,7 @@ export function LoginForm({ loading, onSubmit }: LoginFormProps) {
       <button
         type="submit"
         disabled={loading}
-        className="w-full py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-700 text-white font-semibold rounded-lg transition-colors shadow-lg shadow-blue-600/30 flex items-center justify-center gap-2 disabled:cursor-not-allowed"
+        className="w-full py-3 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-semibold rounded-lg transition-colors shadow-lg shadow-blue-600/30 flex items-center justify-center gap-2 disabled:cursor-not-allowed"
       >
         {loading ? (
           <>

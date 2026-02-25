@@ -21,8 +21,8 @@ export function Dashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
-      <header className="bg-slate-800/80 border-b border-slate-700 backdrop-blur-sm sticky top-0 z-10 shadow-lg">
+    <div className="min-h-screen bg-theme-bg-page">
+      <header className="bg-theme-bg-card/80 border-b border-theme-border backdrop-blur-sm sticky top-0 z-10 shadow-lg">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -30,21 +30,21 @@ export function Dashboard() {
                 <Shield className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h1 className="text-xl font-bold text-white">Cognito Auth Demo{isAdmin && ': Admin'}</h1>
-                <p className="text-xs text-slate-400">Groups-based Authorization</p>
+                <h1 className="text-xl font-bold text-theme-text-primary">Cognito Auth Demo{isAdmin && ': Admin'}</h1>
+                <p className="text-xs text-theme-text-secondary">Groups-based Authorization</p>
               </div>
             </div>
 
             <div className="flex items-center gap-4">
               <div className="text-right">
-                <p className="text-sm text-slate-300 font-medium">{user?.email}</p>
-                <p className="text-xs text-slate-500 capitalize">
-                  Role: <span className="text-blue-400">{user?.role}</span>
+                <p className="text-sm text-theme-text-secondary font-medium">{user?.email}</p>
+                <p className="text-xs text-theme-text-muted capitalize">
+                  Role: <span className="text-blue-500">{user?.role}</span>
                 </p>
               </div>
               <button
                 onClick={handleLogout}
-                className="flex items-center gap-2 px-4 py-2 bg-slate-700 hover:bg-slate-600 text-slate-200 rounded-lg transition-colors border border-slate-600"
+                className="flex items-center gap-2 px-4 py-2 bg-theme-bg-card-alt hover:opacity-80 text-theme-text-primary rounded-lg transition-colors border border-theme-border"
               >
                 <LogOut className="w-4 h-4" />
                 Logout
@@ -55,30 +55,30 @@ export function Dashboard() {
       </header>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
-        <section className="bg-slate-800 border border-slate-700 rounded-xl p-8 shadow-xl">
-          <h2 className="text-3xl font-bold text-white mb-3">
+        <section className="bg-theme-bg-card border border-theme-border rounded-xl p-8 shadow-xl">
+          <h2 className="text-3xl font-bold text-theme-text-primary mb-3">
             Welcome to the Cognito Auth Demo
           </h2>
-          <p className="text-slate-300 leading-relaxed max-w-3xl">
-            This demo shows how Cognito <span className="font-semibold text-blue-400">groups</span> and{' '}
-            <span className="font-semibold text-blue-400">app clients</span> control access to API
+          <p className="text-theme-text-secondary leading-relaxed max-w-3xl">
+            This demo shows how Cognito <span className="font-semibold text-blue-500">groups</span> and{' '}
+            <span className="font-semibold text-blue-500">app clients</span> control access to API
             endpoints. Any authenticated user can access customer endpoints (1 & 2). Only users in
-            the <span className="font-semibold text-purple-400">admin</span> group, signed in through
+            the <span className="font-semibold text-purple-500">admin</span> group, signed in through
             the admin client, can access admin endpoints (3 & 4). A Lambda authorizer checks both
             your group and client on every request.
           </p>
         </section>
 
-        <section className="bg-slate-800 border border-slate-700 rounded-xl p-8 shadow-xl">
-          <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
-            <Shield className="w-5 h-5 text-blue-400" />
+        <section className="bg-theme-bg-card border border-theme-border rounded-xl p-8 shadow-xl">
+          <h3 className="text-xl font-bold text-theme-text-primary mb-4 flex items-center gap-2">
+            <Shield className="w-5 h-5 text-blue-500" />
             Your Current Groups
           </h3>
           <div className="flex flex-wrap gap-3 mb-6">
             {user?.groups?.map((scope) => (
               <span
                 key={scope}
-                className="px-4 py-2 bg-slate-900 border border-slate-600 rounded-lg text-sm font-mono text-purple-400 shadow-md"
+                className="px-4 py-2 bg-theme-bg-card-alt border border-theme-border rounded-lg text-sm font-mono text-purple-500 shadow-md"
               >
                 {scope}
               </span>
@@ -87,8 +87,8 @@ export function Dashboard() {
 
         </section>
 
-        <section className="bg-slate-800 border border-slate-700 rounded-xl p-8 shadow-xl">
-          <h3 className="text-xl font-bold text-white mb-6">API Endpoints Tester</h3>
+        <section className="bg-theme-bg-card border border-theme-border rounded-xl p-8 shadow-xl">
+          <h3 className="text-xl font-bold text-theme-text-primary mb-6">API Endpoints Tester</h3>
           <div className="space-y-4">
             {API_ENDPOINTS.map((endpoint) => (
               <EndpointCard key={endpoint.id} endpoint={endpoint} />
@@ -97,7 +97,7 @@ export function Dashboard() {
         </section>
 
         <div className="text-center py-6">
-          <p className="text-sm text-slate-500">
+          <p className="text-sm text-theme-text-muted">
             Powered by Amazon Cognito · To switch roles, log out and sign in with a different app client
           </p>
         </div>
