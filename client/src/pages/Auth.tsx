@@ -131,9 +131,19 @@ export function Auth() {
           </div>
         </div>
 
-        <div className="mt-6 p-4 rounded-lg text-sm bg-theme-bg-card border border-theme-border">
-          <p className="font-semibold mb-2 text-theme-text-secondary">Demo Admin Credentials</p>
-          <p className="font-mono text-theme-text-primary">admin@demo.com / P@ssw0rd</p>
+        <div className="mt-6 p-4 rounded-lg text-sm bg-theme-bg-card border border-theme-border space-y-1">
+          <p className="font-semibold mb-2 text-theme-text-secondary">Demo Credentials</p>
+          <p className="text-theme-text-primary">
+            <span className="text-theme-text-muted">Customer site:</span>{' '}
+            <span className="font-mono">customer@demo.com / P@ssw0rd</span>
+          </p>
+          <p className="text-theme-text-primary">
+            <span className="text-theme-text-muted">Admin site:</span>{' '}
+            <span className="font-mono">admin@demo.com / P@ssw0rd</span>
+          </p>
+          <p className="text-theme-text-muted text-xs mt-2">
+            Admin users can also log into the customer site (same user pool).
+          </p>
         </div>
 
         <p className="text-center text-sm mt-4 text-theme-text-muted">
