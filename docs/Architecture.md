@@ -204,6 +204,121 @@ Lambda calls AdminListGroupsForUser
 
 ---
 
+## Design Decisions
+
+### Custom UI over Hosted UI
+
+**Context:** Needed to demo first-party multi-app authorization with two app clients.
+
+**Decision:** Custom login form with SRP authentication.
+
+**Alternatives considered:** Cognito Hosted UI with OAuth flows and scopes.
+
+**Rationale:** Hosted UI and OAuth scopes are designed for *delegation*—authorizing third-party apps to act on behalf of users ("Login with Google", B2B SSO, external integrations). For first-party apps we control, this model is unnecessary overhead. Custom UI with SRP gives direct authentication without redirects, full branding control, and works naturally with the two-app-client pattern where the same user gets different permissions based on which portal they enter.
+
+**Tradeoff accepted:** More code to maintain (AuthContext, forms, error handling), but the right authorization model for the use case.
+
+---
+
+### Lambda Authorizer over Cognito Authorizer
+
+**Context:** Authorization requires checking both `cognito:groups` AND `client_id` per endpoint.
+
+**Decision:** Custom Lambda authorizer that inspects JWT claims.
+
+**Alternatives considered:** API Gateway's built-in Cognito User Pool authorizer.
+
+**Rationale:** The Cognito authorizer only validates token authenticity ("is this JWT valid and from my User Pool?"). It cannot inspect claims like `cognito:groups` or `client_id`, nor make per-endpoint authorization decisions. For the `group ∩ client_id → permission` pattern, a Lambda authorizer was *required*, not a simplification.
+
+**Tradeoff accepted:** ~50ms added latency per request, plus Lambda invocation cost. Acceptable for the authorization granularity gained.
+
+---
+
+### Groups-based RBAC over Scopes
+
+**Context:** Initially considered OAuth scopes for permission control.
+
+**Decision:** Cognito groups with group claims in JWT.
+
+**Alternatives considered:** OAuth scopes via Hosted UI authorization flows.
+
+**Rationale:** Scopes answer "what can this *application* do on behalf of the user?" Groups answer "what can this *user* do?" For first-party apps, we're not delegating authority to a third party—we're directly authorizing users. Groups map cleanly to business roles (customer, admin) and work with custom UI + SRP. Scopes would require Hosted UI and OAuth flows, which don't fit the first-party multi-app scenario.
+
+---
+
+### Groups-based RBAC over Cedar/AVP
+
+**Context:** Needed to control access to API endpoints by role.
+
+**Decision:** Cognito groups with Lambda authorizer checking group claims.
+
+**Alternatives considered:** Amazon Verified Permissions (AVP) with Cedar policies.
+
+**Rationale:** Cedar excels at *resource-level* authorization ("can user X edit resource Y?") with complex conditions (attributes, relationships, time-based rules). This demo has no resources—just endpoints gated by role. Groups are the *correct* abstraction for endpoint-level RBAC, not a simplification.
+
+**When Cedar would apply:** If extended to resource-level permissions (e.g., "users can only modify their own profile", "admins can approve orders under $10k"), Cedar's policy model would become valuable. For endpoint-level access control, it's unnecessary complexity.
+
+---
+
+## Security Considerations
+
+### What This Design Mitigates
+
+| Threat | Mitigation |
+|--------|------------|
+| **Token theft via XSS** | Tokens stored in memory only, not localStorage—inaccessible to injected scripts after page refresh |
+| **Password interception** | SRP protocol ensures password never leaves the client; only proof-of-knowledge is transmitted |
+| **Client spoofing** | Pre-Auth Lambda validates that user's group matches the app client before token issuance |
+| **Token reuse across apps** | Lambda authorizer checks both `cognito:groups` AND `client_id`—token from customer-app cannot access admin endpoints |
+| **JWT forgery** | RS256 signature verification against Cognito's JWKS; tokens signed by Cognito's private key only |
+| **Issuer confusion** | Authorizer validates `iss` claim matches expected Cognito User Pool URL |
+
+### Security Boundaries
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│  Boundary 1: Cognito Pre-Auth                                   │
+│  "Can this user get a token from this app client?"              │
+│  → Blocks non-admin users from obtaining admin-app tokens       │
+└─────────────────────────────────────────────────────────────────┘
+                              ↓
+┌─────────────────────────────────────────────────────────────────┐
+│  Boundary 2: Lambda Authorizer                                  │
+│  "Can this token access this endpoint?"                         │
+│  → Validates signature, issuer, group membership, client_id     │
+└─────────────────────────────────────────────────────────────────┘
+                              ↓
+┌─────────────────────────────────────────────────────────────────┐
+│  Boundary 3: API Gateway                                        │
+│  "Allow or Deny based on authorizer policy"                     │
+│  → Enforces the IAM policy returned by authorizer               │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### Not Addressed (Out of Scope)
+
+- **DDoS protection** — No WAF configured; relies on API Gateway throttling only
+- **Audit logging** — Authorization decisions not logged; no trail for security review
+- **Secret rotation** — No automated rotation of any credentials
+- **CORS hardening** — Allows configured origins but no additional origin validation
+
+---
+
+## Limitations
+
+This is an educational demo, not production-ready. Known gaps:
+
+| Gap | Impact | Production Fix |
+|-----|--------|----------------|
+| **No automated tests** | Regression risk on changes | Add unit tests for authorizer logic and E2E tests for auth flows |
+| **No observability** | Auth failures are invisible—Lambda authorizer doesn't log decisions to CloudWatch | Add structured logging for all allow/deny decisions with context |
+| **JWKS caching without TTL** | Keys cached indefinitely; silent failure if Cognito rotates signing keys | Implement cache invalidation with TTL or on verification failure |
+| **Single region** | No disaster recovery or failover | Multi-region User Pool with Route 53 failover |
+| **No token refresh handling** | Users re-authenticate when tokens expire | Add silent refresh in the client before token expiry |
+| **No rate limiting on auth** | Vulnerable to credential stuffing | Enable Cognito advanced security features or WAF rules |
+
+---
+
 ## Infrastructure (Terraform)
 
 ```
